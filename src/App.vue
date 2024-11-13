@@ -1,5 +1,5 @@
 <template>
-  <router-view />
+  <router-view class="bg-color font-vazir-fd"/>
 </template>
 
 <script setup>

@@ -1,34 +1,24 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
+  <q-layout view="hHh lpR fFf">
+    <q-header elevated class="bg-primary text-white">
       <q-toolbar>
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        />
-
         <q-toolbar-title>
-          Quasar App
+          <q-avatar>
+            <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg">
+          </q-avatar>
+          نرم افزار صندوق
         </q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+        <!-- <q-btn dense flat round icon="menu" @click="toggleRightDrawer" /> -->
       </q-toolbar>
     </q-header>
 
-    <q-drawer
-      v-model="leftDrawerOpen"
-      show-if-above
-      bordered
-    >
+    <q-drawer show-if-above v-model="rightDrawerOpen" side="right" bordered >
       <q-list>
         <q-item-label
           header
         >
-          Essential Links
+          صفحات
         </q-item-label>
 
         <EssentialLink
@@ -55,52 +45,35 @@ defineOptions({
 
 const linksList = [
   {
-    title: 'Docs',
-    caption: 'quasar.dev',
+    title: 'حساب ها',
     icon: 'school',
-    link: 'https://quasar.dev'
+    link: '#/'
   },
   {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
+    title: 'وام ها',
     icon: 'code',
-    link: 'https://github.com/quasarframework'
+    link: '#/loans'
   },
   {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
+    title: 'اقساط و ماهیانه',
     icon: 'chat',
-    link: 'https://chat.quasar.dev'
+    link: '#/transactions'
   },
   {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
+    title: 'دفترتلفن',
     icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
+    link: '#/members'
   },
   {
-    title: 'Twitter',
-    caption: '@quasarframework',
+    title: 'مدیریت حساب ها',
     icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
+    link: '#/fund_accounts'
   }
 ]
 
-const leftDrawerOpen = ref(false)
+const rightDrawerOpen = ref(true)
 
-function toggleLeftDrawer () {
-  leftDrawerOpen.value = !leftDrawerOpen.value
-}
+function toggleRightDrawer () {
+        rightDrawerOpen.value = !rightDrawerOpen.value
+      }
 </script>

@@ -21,7 +21,7 @@ module.exports = configure(function (/* ctx */) {
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
     boot: [
-      
+
       'axios',
     ],
 
@@ -55,7 +55,7 @@ module.exports = configure(function (/* ctx */) {
       // vueRouterBase,
       // vueDevtools,
       // vueOptionsAPI: false,
-
+      rtl: true,
       // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
 
       // publicPath: '/',

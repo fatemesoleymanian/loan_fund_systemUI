@@ -1,1 +1,111 @@
 // app global css in SCSS form
+@font-face {
+  font-family: iran_sans_thin;
+  src: url(../fonts/IRANSansXFaNum-Thin.ttf);
+}
+
+* {
+  font-family: iran_sans_medium;
+  src: url(../fonts/IRANSansXFaNum-Medium.ttf);
+  direction: rtl;
+}
+
+@font-face {
+    font-family: iran_sans_ultra_light;
+    src: url(../fonts/IRANSansXFaNum-UltraLight.ttf);
+}
+@font-face {
+  font-family: iran_sans_en_num_light;
+  src: url(../fonts/IRANSansX-Light.ttf);
+}
+@font-face {
+    font-family: iran_sans_light;
+    src: url(../fonts/IRANSansXFaNum-Light.ttf);
+}
+.font-vazir-fd {
+  font-family: 'iran_sans_medium';
+}
+
+@font-face {
+    font-family: iran_sans_regular;
+    src: url(../fonts/IRANSansXFaNum-Regular.ttf);
+}
+
+@font-face {
+    font-family: iran_sans_medium;
+    src: url(../fonts/IRANSansXFaNum-Medium.ttf);
+}
+
+@font-face {
+    font-family: iran_sans_demi_bold;
+    src: url(../fonts/IRANSansXFaNum-DemiBold.ttf);
+}
+
+@font-face {
+    font-family: iran_sans_bold;
+    src: url(../fonts/IRANSansXFaNum-Bold.ttf);
+}
+
+@font-face {
+    font-family: iran_sans_extra_bold;
+    src: url(../fonts/IRANSansXFaNum-ExtraBold.ttf);
+}
+
+@font-face {
+    font-family: iran_sans_black;
+    src: url(../fonts/IRANSansXFaNum-Black.ttf);
+}
+@font-face {
+  font-family: iran_sans_en_num_bold;
+  src: url(../fonts/IRANSansX-Bold.ttf);
+}
+@font-face {
+  font-family: iran_sans_en_num_regular;
+  src: url(../fonts/IRANSansX-Regular.ttf);
+}
+.font-thin {
+    font-family: iran_sans_thin;
+}
+
+.font-ultra-light {
+    font-family: iran_sans_ultra_light;
+}
+
+.font-light {
+    font-family: iran_sans_light;
+}
+.font-en-num-light {
+  font-family: iran_sans_en_num_light;
+}
+
+.font-regular {
+    font-family: iran_sans_regular;
+}
+.font-en-num-regular {
+  font-family: iran_sans_en_num_regular;
+}
+
+.font-medium {
+    font-family: iran_sans_medium;
+}
+
+.font-demi-bold {
+    font-family: iran_sans_demi_bold;
+}
+.font-en-num-bold{
+  font-family: iran_sans_en_num_bold;
+}
+.font-bold {
+    font-family: iran_sans_bold;
+}
+
+.font-extra-bold {
+    font-family: iran_sans_extra_bold;
+}
+.font-w-700{
+  font-weight: 700;
+}
+
+.font-black {
+    font-family: iran_sans_black;
+}

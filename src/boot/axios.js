@@ -1,13 +1,38 @@
+/* eslint-disable */
+
 import { boot } from 'quasar/wrappers'
 import axios from 'axios'
+import { Notify } from 'quasar'
 
-// Be careful when using SSR for cross-request state pollution
-// due to creating a Singleton instance here;
-// If any client changes this (global) instance, it might be a
-// good idea to move this instance creation inside of the
-// "export default () => {}" function below (which runs individually
-// for each client)
-const api = axios.create({ baseURL: 'https://api.example.com' })
+const api = axios.create({ baseURL: 'https://bt.vhotel.ir/api' })
+api.interceptors.response.use(
+  response => {
+    // If the response is successful, return it directly
+    return response
+  },
+  error => {
+    // If there's an error response
+    if (error.response && error.response.status === 401) {
+      // Handle 401 error, for example, redirect to login page or show message
+      Notify.create({
+        message: 'نشست کاربری شما به پایان رسیده است. لطفا وارد حساب خود شوید!.',
+        color: 'negative',
+        classes: 'h4 font-medium'
+      })
+
+      localStorage.removeItem('token')
+      console.error('Unauthorized access!')
+      window.location.href = '/'
+
+
+    }
+    // Return the error promise to be caught in the calling function
+    return Promise.reject(error)
+  }
+)
+
+// axios.defaults.baseURL = process.env.Vue_APP_API_BASE_URL;
+// axios.defaults.withCredentials = true;
 
 export default boot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
@@ -17,8 +42,13 @@ export default boot(({ app }) => {
   //       so you won't necessarily have to import axios in each vue file
 
   app.config.globalProperties.$api = api
+  // console.log(localStorage.getItem('token'))
+  if (localStorage.getItem('token') !== null && localStorage.getItem('token').includes('error') === false) {
+    api.defaults.headers.common.Authorization = 'Bearer ' + localStorage.getItem('token')
+  }
+
   // ^ ^ ^ this will allow you to use this.$api (for Vue Options API form)
   //       so you can easily perform requests against your app's API
 })
 
-export { api }
+export { axios, api }
