@@ -25,116 +25,8 @@
       no-data-label="اطلاعاتی یافت نشد!"
       no-results-label="متاسفانه اطلاعاتی یافت نشد!"
     >
-
-      <!--template v-slot:item="props">
-
-      </template-->
-
-          <!-- MAIN -->
-    <!-- <template v-slot:item="props">
-        <div style="background-color: red"
-          class="q-pa-xs col-xs-12 col-sm-6 col-md-4 col-lg-3 grid-style-transition"
-            :style="props.selected ? 'transform: scale(0.95);' : ''">
-          <q-card bordered flat :class="props.selected ? ($q.dark.isActive ? 'bg-grey-9' : 'bg-grey-2') : ''">
-            <q-card-section>
-              <q-checkbox dense v-model="props.selected" :label="props.row.name" />
-            </q-card-section>
-            <q-separator />
-            <q-list dense>
-              <q-item class="row" v-for="col in props.cols" :key="col.name">
-                <q-item-section class="col-3">
-                  <q-item-label class="text-center">{{ col.label }}</q-item-label>
-                </q-item-section>
-                <q-item-section side class="col-3">
-                  <q-item-label caption>{{ col.value }}</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-card>
-        </div>
-      </template> -->
-          <!-- MAIN  -->
-
-      <!--template v-slot:item="props">
-        <div class="q-pa-xs col-12">
-          <q-card flat bordered>
-            <div class="row">
-                <slot
-                  :name="`row-${p.name}`"
-                  :col="p"
-                  :row="props.row"
-                >
-                <div class="row">
-                <div v-for="t in p.tools" :key="t" class="col">
-                  <q-avatar v-if="t['img']">
-                    <img :src="props.row[t['img'].srcKey] != null ? props.row[t['img'].srcKey] : ''" >
-                  </q-avatar>
-                  <q-toggle
-                    v-if="t.toggle && props.row[t.toggle.value_key] != null"
-                    v-model="props.row[t.toggle.value_key]"
-                    @update:model-value="$emit(t.toggle.emit, props.row)"
-                    checked-icon="check"
-                    color="primary"
-                    class="style"
-                    :label="props.row[t.toggle.value_key] ? t.toggle.active_label : t.toggle.inactive_label"
-                    unchecked-icon="clear"
-                    :disable="t.toggle.disable"
-                  />
-                  <q-input v-if="t['q-input']" class="q-input-style"
-                  outlined
-                  dense
-                  autogrow
-                  v-model="props.row[t['q-input'].valueKey]"
-                  :hint="t['q-input'].hint"
-                  :label="t['q-input'].label"
-                  :prefix="t['q-input'].prefix"
-                  :suffix="t['q-input'].suffix"/>
-
-                  <SelectionInput v-if="t['selection-input']"
-                    :label="t['selection-input'].label"
-                    :hint="t['selection-input'].hint"
-                    :dense="t['selection-input'].dense"
-                    :optionList="t['selection-input'].optionList"
-                    @on-update-model="$emit(t['selection-input'].onUpdateModel, $model)"
-                    :value="props.row[t['selection-input'].valueKey]"
-                  />
-
-                  <q-checkbox v-if="t['q-checkbox']" v-model="props.row[t['q-checkbox'].value_key]" :label="t['q-checkbox'].label" />
-                  <ButtonOptions v-if="t['q-button-options']" :items="t['q-button-options'].items" :active_class="t['q-button-options'].active_class"
-                  :inactive_class="t['q-button-options'].inactive_class" />
-
-                  <q-btn class="action-btn" v-if="t['q-btn']" :size="t['q-btn'].size != null ? t['q-btn'].size : 'xs'" :round="t['q-btn'].round" :outline="t['q-btn'].outline"
-                  :icon="t['q-btn'].icon"
-                  :label="t['q-btn'].label"
-                  :color="t['q-btn'].color"
-                  @click="t['q-btn'].emit != null ? $emit(t['q-btn'].emit, props.row) : null">
-                    <q-menu v-if="t['q-btn'].menu != null" class="font-demi-bold h4-5">
-                      <q-list style="min-width: 100px">
-                        <q-item v-for="menu in t['q-btn'].menu" :key="menu" clickable v-close-popup @click="menu.emit != null ? $emit(menu.emit, props.row) : null">
-                          <q-item-section>{{ menu.title }}</q-item-section>
-                          <q-avatar>
-                            <q-icon :color="menu.icon_color" :name="menu.icon_name" />
-                          </q-avatar>
-                          <q-toggle
-                          v-if="menu.toggle"
-                          v-model="props.row[menu.toggle.value_key]"
-                          :label="props.row[menu.toggle.value_key] ? menu.toggle.active_label : menu.toggle.inactive_label"
-                          @update:model-value="$emit(menu.toggle.emit, props.row, props.row[menu.toggle.value_key])"/>
-                        </q-item>
-                      </q-list>
-                    </q-menu>
-                  </q-btn>
-                </div>
-              </div>
-
-                <div style="max-width: 400px;" v-if="!p.hide_row_text" :class="'overflow scroll row-font ' + p.extra_class">{{ rowText(props.row[p.name]) }}</div>
-              </slot>
-              </div>
-          </q-card>
-        </div>
-      </template-->
       <template v-slot:body="props">
-        <q-tr v-show="$q.screen.md || $q.screen.lg || $q.screen.xl"
+        <q-tr
         key="name" :props="props" bordered :no-hover="noHover"
         @mouseup="selectedRow = props.row" :class="props.row.class"
         @mousedown="handleRepeat">
@@ -189,8 +81,8 @@
                   />
 
                   <q-checkbox v-if="t['q-checkbox']" v-model="props.row[t['q-checkbox'].value_key]" :label="t['q-checkbox'].label" />
-                  <ButtonOptions v-if="t['q-button-options']" :items="t['q-button-options'].items" :active_class="t['q-button-options'].active_class"
-                  :inactive_class="t['q-button-options'].inactive_class" />
+                  <!-- <ButtonOptions v-if="t['q-button-options']" :items="t['q-button-options'].items" :active_class="t['q-button-options'].active_class"
+                  :inactive_class="t['q-button-options'].inactive_class" /> -->
 
                   <q-btn class="action-btn q-my-sm" style="float:left!important;" v-if="t['q-btn']"
                    :size="t['q-btn'].size != null ? t['q-btn'].size : 'xs'" :round="t['q-btn'].round" :outline="t['q-btn'].outline"
@@ -225,228 +117,21 @@
           </slot>
         </q-tr>
 
-        <q-tr v-show="$q.screen.sm || $q.screen.xs" :props="props" :key="`e_${props.row.index}`"
+        <!-- <q-tr :props="props" :key="`e_${props.row.index}`"
           class="q-virtual-scroll--with-prev">
           <q-td colspan="100%" classs="column"  style="margin: 0;padding:0;">
             <div class="align-right" v-if="props.cols[0] != null && props.cols[0].name === 'select'">
             <q-checkbox  dense v-model="props.row.name" />
           </div>
-        <ExpansionList
-        :hide-mode="expansionHideMode"
-        :haschckbox="props.cols[0] != null && props.cols[0].name === 'select'" :table_usage="true"
-        :class="`col-12 ${props.selected ? ($q.dark.isActive ? 'bg-grey-9' : 'bg-grey-2') : ''}`"
-           style="margin: 0;"
-           :checkbox="props.row.name"
-           :text="props.cols[0] != null && props.cols[0].name === 'select'?[
-            {
-              col: props.cols[1].value
-            },
-            {
-              col:props.cols.length >2 ? props.cols[2].value : null
-            }]:[{
-              col: props.cols[0].value
-            },
-            {
-              col:props.cols.length >1 ? props.cols[1].value : null
-            }]
-          ">
-            <template #body>
-              <q-list dense class="row align-right q-py-sm" v-if="!colToRow">
-              <q-item :class="'col-6 ' +'align-right'"
-              style="overflow-x: overlay;"
-              v-for="col in columns" :key="col.name">
-                <q-item-section>
-                  <q-item-label class="align-right color-cgrey h5" style="display: block;width">
-                    {{ col.label }}
-                  </q-item-label>
-                  <slot
-                  :name="`row-${col.name}`"
-                  :col="col"
-                  :row="props.row"
-                  >
-                    <q-item-label caption class="align-right color-dark h5">
-                      {{ props.row[col.name] }}
-                    </q-item-label>
-                    <div v-for="t in col.tools" :key="t" :class="`${col.hide_row_text ? 'col-12 text-center justify-center ':'col-1'}`" >
-                      <q-avatar v-if="t['img']">
-                        <img :src="props.row[t['img'].srcKey] != null ? props.row[t['img'].srcKey] : ''" >
-                      </q-avatar>
-                      <q-toggle
-                        v-if="t.toggle && props.row[t.toggle.value_key] != null"
-                        v-model="props.row[t.toggle.value_key]"
-                        @update:model-value="$emit(t.toggle.emit, props.row)"
-                        checked-icon="fa-solid fa-circle-check"
-                        color="primary"
-                        class="style" :style="`${!hide_row_text ? 'float: right;' : ''}`"
-                        :label="props.row[t.toggle.value_key] ? t.toggle.active_label : t.toggle.inactive_label"
-                        unchecked-icon="fa-solid fa-xmark"
-                        :disable="t.toggle.disable"
-                      />
-                      <q-input v-if="t['q-input']" class="q-input-style"
-                      outlined
-                      dense
-                      autogrow
-                      v-model="props.row[t['q-input'].valueKey]"
-                      :hint="t['q-input'].hint"
-                      :label="t['q-input'].label"
-                      :prefix="t['q-input'].prefix"
-                      :suffix="t['q-input'].suffix"/>
-
-                      <SelectionInput v-if="t['selection-input']"
-                        :label="t['selection-input'].label"
-                        :hint="t['selection-input'].hint"
-                        :dense="t['selection-input'].dense"
-                        :optionList="t['selection-input'].optionList"
-                        @on-update-model="$emit(t['selection-input'].onUpdateModel, $model)"
-                        :value="props.row[t['selection-input'].valueKey]"
-                      />
-
-                      <q-checkbox v-if="t['q-checkbox']" v-model="props.row[t['q-checkbox'].value_key]" :label="t['q-checkbox'].label" />
-                      <ButtonOptions v-if="t['q-button-options']" :items="t['q-button-options'].items" :active_class="t['q-button-options'].active_class"
-                      :inactive_class="t['q-button-options'].inactive_class" />
-
-                      <q-btn class="action-btn q-my-sm" style="float:left!important;" v-if="t['q-btn']"
-                       :size="t['q-btn'].size != null ? t['q-btn'].size : 'xs'" :round="t['q-btn'].round" :outline="t['q-btn'].outline"
-                      :icon="t['q-btn'].icon" :align="t['q-btn'].align"
-                      :label="t['q-btn'].label"
-                      unelevated
-                      :color="t['q-btn'].color"
-                      :disable="t['q-btn'].disable"
-                      @click="t['q-btn'].emit != null ? $emit(t['q-btn'].emit, props.row) : null">
-                        <q-menu v-if="t['q-btn'].menu != null" class="font-demi-bold h4-5">
-                          <q-list style="min-width: 100px">
-                            <q-item v-for="menu in t['q-btn'].menu" :key="menu" clickable v-close-popup @click="menu.emit != null ? $emit(menu.emit, props.row) : null">
-                              <q-item-section>{{ menu.title }}</q-item-section>
-                              <q-avatar>
-                                <q-icon :color="menu.icon_color" :name="menu.icon_name" />
-                              </q-avatar>
-                              <q-toggle
-                              v-if="menu.toggle"
-                              v-model="props.row[menu.toggle.value_key]"
-                              :label="props.row[menu.toggle.value_key] ? menu.toggle.active_label : menu.toggle.inactive_label"
-                              @update:model-value="$emit(menu.toggle.emit, props.row, props.row[menu.toggle.value_key])"/>
-                            </q-item>
-                          </q-list>
-                        </q-menu>
-                      </q-btn>
-                    </div>
-                  </slot>
-                </q-item-section>
-              </q-item>
-            </q-list>
-            <div v-else>
-             <div class="row q-px-sm" v-for="col in columns" :key="col.name">
-                  <div class="align-right color-cgrey h5 col-12 q-px-sm">{{ col.label }}</div>
-                  <div class="col-12 q-pb-lg q-px-sm" >
-                    <slot
-                  :name="`row-${col.name}`"
-                  :col="col"
-                  :row="props.row"
-                  >
-                    <q-item-label caption class="align-right color-dark h5">
-                      {{ props.row[col.name] }}
-                    </q-item-label>
-                    <div v-for="t in col.tools" :key="t" :class="`${col.hide_row_text ? 'col-12 text-center justify-center ':'col-1'}`" >
-                      <q-avatar v-if="t['img']">
-                        <img :src="props.row[t['img'].srcKey] != null ? props.row[t['img'].srcKey] : ''" >
-                      </q-avatar>
-                      <q-toggle
-                        v-if="t.toggle && props.row[t.toggle.value_key] != null"
-                        v-model="props.row[t.toggle.value_key]"
-                        @update:model-value="$emit(t.toggle.emit, props.row)"
-                        checked-icon="fa-solid fa-circle-check"
-                        color="primary"
-                        class="style" :style="`${!hide_row_text ? 'float: right;' : ''}`"
-                        :label="props.row[t.toggle.value_key] ? t.toggle.active_label : t.toggle.inactive_label"
-                        unchecked-icon="fa-solid fa-xmark"
-                        :disable="t.toggle.disable"
-                      />
-                      <q-input v-if="t['q-input']" class="q-input-style"
-                      outlined
-                      dense
-                      autogrow
-                      v-model="props.row[t['q-input'].valueKey]"
-                      :hint="t['q-input'].hint"
-                      :label="t['q-input'].label"
-                      :prefix="t['q-input'].prefix"
-                      :suffix="t['q-input'].suffix"/>
-
-                      <SelectionInput v-if="t['selection-input']"
-                        :label="t['selection-input'].label"
-                        :hint="t['selection-input'].hint"
-                        :dense="t['selection-input'].dense"
-                        :optionList="t['selection-input'].optionList"
-                        @on-update-model="$emit(t['selection-input'].onUpdateModel, $model)"
-                        :value="props.row[t['selection-input'].valueKey]"
-                      />
-
-                      <q-checkbox v-if="t['q-checkbox']" v-model="props.row[t['q-checkbox'].value_key]" :label="t['q-checkbox'].label" />
-                      <ButtonOptions v-if="t['q-button-options']" :items="t['q-button-options'].items" :active_class="t['q-button-options'].active_class"
-                      :inactive_class="t['q-button-options'].inactive_class" />
-
-                      <q-btn class="action-btn q-my-sm" style="float:left!important;" v-if="t['q-btn']"
-                       :size="t['q-btn'].size != null ? t['q-btn'].size : 'xs'" :round="t['q-btn'].round" :outline="t['q-btn'].outline"
-                      :icon="t['q-btn'].icon" :align="t['q-btn'].align"
-                      :label="t['q-btn'].label"
-                      unelevated
-                      :color="t['q-btn'].color"
-                      :disable="t['q-btn'].disable"
-                      @click="t['q-btn'].emit != null ? $emit(t['q-btn'].emit, props.row) : null">
-                        <q-menu v-if="t['q-btn'].menu != null" class="font-demi-bold h4-5">
-                          <q-list style="min-width: 100px">
-                            <q-item v-for="menu in t['q-btn'].menu" :key="menu" clickable v-close-popup @click="menu.emit != null ? $emit(menu.emit, props.row) : null">
-                              <q-item-section>{{ menu.title }}</q-item-section>
-                              <q-avatar>
-                                <q-icon :color="menu.icon_color" :name="menu.icon_name" />
-                              </q-avatar>
-                              <q-toggle
-                              v-if="menu.toggle"
-                              v-model="props.row[menu.toggle.value_key]"
-                              :label="props.row[menu.toggle.value_key] ? menu.toggle.active_label : menu.toggle.inactive_label"
-                              @update:model-value="$emit(menu.toggle.emit, props.row, props.row[menu.toggle.value_key])"/>
-                            </q-item>
-                          </q-list>
-                        </q-menu>
-                      </q-btn>
-                    </div>
-                  </slot>
-                </div>
-              </div>
-            </div>
-            </template>
-          </ExpansionList>
           </q-td>
-        </q-tr>
+        </q-tr> -->
         <!--q-tr v-if="child_component != null && props.row.expanded" v-show="child_component != null && props.row.expanded" :props="props" class="bg-grey-3">
           <q-td colspan="100%">
             <TableList :rows="tableRows" :columns="tableColumns"/>
           </q-td>
         </q-tr-->
       </template>
-      <!--template v-slot:body-cell-img="props">
-        <q-th :props="props">
-          <q-avatar>
-            <q-img :src="props.row['img'] != null ? props.row['img'].src : ''" />
-          </q-avatar>
-        </q-th>
-      </template>
-      <template v-slot:body-cell-actions="props">
-        <q-th :props="props">
-          <q-btn outline round class="q-mx-xs" size="sm" v-for="b in props.col.actions" :key="b" :icon="b.icon" :title="b.title" :color="b.color" @click="$emit(b.emit, props.row)"/>
-        </q-th>
-      </template>
-      <template v-slot:body-cell-toggle="props">
-        <q-th :props="props">
-          <q-toggle
-            v-if="props.row['toggle'] != null"
-            v-model="props.row['toggle'].active"
-            checked-icon="check"
-            color="primary"
-            unchecked-icon="clear"
-            :label="props.row['toggle'].active ? props.col.active_label : props.col.inactive_label"
-          />
-        </q-th>
-      </template-->
+
       <template v-slot:header-cell="props">
         <q-th :props="props" bordered style="padding: 0">
           <div class="row justify-sm-between" style="margin:0;">
@@ -539,7 +224,7 @@
                 </template>
                   </q-input>
             </div>
-            <div class="col-sm-6 col-7" v-if="!hide_header_top_left" id="column-selection-btn">
+            <!-- <div class="col-sm-6 col-7" v-if="!hide_header_top_left" id="column-selection-btn">
                 <q-select
                 v-model="visibleColumns"
                 multiple
@@ -565,8 +250,8 @@
                 </template>
 
                 </q-select>
-            </div>
-            <div class="col-5 lt-xsc" v-if="!hide_header">
+            </div> -->
+            <!-- <div class="col-5 lt-xsc" v-if="!hide_header">
               <q-btn
                 unelevated
                   id="lt-export-table-btn"
@@ -577,7 +262,7 @@
 
                   no-caps
                   @click="exportTable"/>
-            </div>
+            </div> -->
             </slot>
             <div class="col-sm-12">
               <div v-if="extra_buttons != null" class="gt-sm text-left justify-start row" style="padding: 0!important;" >
@@ -612,13 +297,13 @@
          :label="add_button.label" :icon="add_button.icon"
           :class="`style q-mx-xs ${add_button.smallerIcon !=null ?'smaller-icon' :''}`"
           color="primary" @click="$emit('on-add-button')"/>
-          <div v-if="extra_buttons != null" class="col-sm-6 lt-xsc" >
+          <!-- <div v-if="extra_buttons != null" class="col-sm-6 lt-xsc" >
           <q-btn v-for=" (b, i) in extra_buttons" :key="b" :label="b.label"
           :outline="b.outline"
           unelevated :id="`extra-buttons-${i}`"
            :icon="b.icon" class="style q-mx-xs extra-buttons" :loading="b.loader"
             :color="b.color == null ? 'primary' : b.color" @click="$emit(b.emit);"/>
-        </div>
+        </div> -->
     </div>
 
   </div>
@@ -627,9 +312,8 @@
 <script>
 import { exportFile, useQuasar } from 'quasar'
 import { ref } from 'vue'
-import ButtonOptions from './Button-Options.vue'
 import { api } from 'src/boot/axios'
-import ExpansionList from './Expansion-List.vue'
+import SelectionInput from './SelectionInput.vue'
 
 function wrapCsvValue (val, formatFn, row) {
   let formatted = formatFn !== void 0
@@ -775,12 +459,12 @@ export default {
     this.setPagination()
 
     let visibleColumns
-    if ($q.screen.md || $q.screen.lg || $q.screen.xl) {
+    // if ($q.screen.md || $q.screen.lg || $q.screen.xl) {
       visibleColumns = this.initVisibleColumns != null ? ref(this.initVisibleColumns) : ref(this.columns.map(item => item.name))
-    } else {
-      visibleColumns = this.initVisibleColumns != null ? ref(this.initVisibleColumns) : ref(this.columns.map(item => item.name))
-      visibleColumns.length = Math.min(visibleColumns.length, 5)
-    }
+    // } else {
+    //   visibleColumns = this.initVisibleColumns != null ? ref(this.initVisibleColumns) : ref(this.columns.map(item => item.name))
+    //   visibleColumns.length = Math.min(visibleColumns.length, 5)
+    // }
     return {
       filter: ref(''),
       $q,
@@ -859,7 +543,7 @@ export default {
       this.rowsValue = null
       pageSize = this.pagination != null ? this.pagination.rowsPerPage : pageSize
       pageNumber = this.pagination != null ? this.pagination.page : pageNumber
-      const query = `/${this.table.url}PageNumber=${pageNumber}&PageSize=${pageSize}&DisablePaging=${pageSize === 0}&${this.filter != null && this.filter !== '' ? `&Search=${this.filter}` : ''}&${filters}&${this.getColumnFilters()}`
+      const query = `/${this.table.url}`
       api.get(query).then(response => {
         const rowsValue = this.table.arrayKey != null ? response.data[this.table.arrayKey] : response.data
         const totalRecords = this.table.totalKey != null ? response.data[this.table.totalKey] : response.data.length
@@ -934,10 +618,8 @@ export default {
   },
 
   components: {
-    SelectionInput: require('components/Selection-Input.vue').default,
-    ButtonOptions,
-    ExpansionList
-  },
+    SelectionInput,
+    },
 
   computed: {
     sortBy () {

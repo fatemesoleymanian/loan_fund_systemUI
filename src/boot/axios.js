@@ -4,7 +4,7 @@ import { boot } from 'quasar/wrappers'
 import axios from 'axios'
 import { Notify } from 'quasar'
 
-const api = axios.create({ baseURL: 'https://bt.vhotel.ir/api' })
+const api = axios.create({ baseURL: 'http://192.168.226.78:8000/api' })
 api.interceptors.response.use(
   response => {
     // If the response is successful, return it directly
