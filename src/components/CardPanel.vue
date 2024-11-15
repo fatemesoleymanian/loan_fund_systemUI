@@ -74,21 +74,18 @@ showNotify (message, type = 'positive') {
 },
 
 methods: {
-async submit (postObj) {
-await api.post(postObj.url, postObj.value).then(response => {
-  // console.log(response)
-  if (!this.disableNotify) this.showNotify('با موفقیت ثبت شد')
-  this.$emit('on-success', response)
+async submit (postObj,method='post') {
+await api[method](postObj.url, postObj.value).then(response => {
+
+  this.$emit('on-success', response.data)
+  if (!this.disableNotify) this.showNotify(response.data.msg)
+
   this.loading = false
 }).catch(error => {
   // console.log(error)
   this.loading = false
-  if (error.response != null && !this.disableNotify) {
-    error.response.data.errorsList.forEach(item => {
-      this.showNotify(item, 'negative')
-
-      this.$emit('on-error')
-    })
+  if (error.response != null ) {
+    alert(error.response.data.message)
   }
 })
 },
@@ -102,11 +99,8 @@ await api.postForm(postObj.url, postObj.value).then(response => {
 }).catch(error => {
   // console.log(error)
   this.loading = false
-  if (!this.disableNotify && error.response.data.errorsList != null) {
-    error.response.data.errorsList.forEach(item => {
-      this.showNotify(item, 'negative')
-      this.$emit('on-error')
-    })
+  if (!this.disableNotify ) {
+    alert(error.response.data.message)
   }
 })
 }

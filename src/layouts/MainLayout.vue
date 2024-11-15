@@ -30,7 +30,16 @@
     </q-drawer>
 
     <q-page-container>
-      <router-view />
+      <router-view @on-notify="showNotify"
+      @on-ok-dialog="onOkDialog"/>
+      <OkCancelDialog
+      v-model="okDialogOpen"
+      :message="okDialogAttrs.message"
+      :icon="okDialogAttrs.icon"
+      :color="okDialogAttrs.color"
+      :text-color="okDialogAttrs.textColor"
+      @on-ok="okDialogAttrs.onOk"
+      @on-cancel="okDialogAttrs.onCancel"/>
     </q-page-container>
   </q-layout>
 </template>
@@ -38,7 +47,8 @@
 <script setup>
 import { ref } from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
-
+import { useQuasar } from 'quasar';
+import OkCancelDialog from 'src/components/Dialogs/OkCancelDialog.vue';
 defineOptions({
   name: 'MainLayout'
 })
@@ -72,8 +82,33 @@ const linksList = [
 ]
 
 const rightDrawerOpen = ref(true)
+const $q = useQuasar()
+const okDialogAttrs = ref({
+  message:'',
+  icon:'',
+  color:'',
+  textColor:'',
+  onOk: null,
+  onCancel: null
+})
+const okDialogOpen = ref(false)
 
 function toggleRightDrawer () {
         rightDrawerOpen.value = !rightDrawerOpen.value
       }
+function showNotify (message, type = 'positive') {
+  $q.notify({
+    timeout: 2000,
+    progress: true,
+    message,
+    type,
+    classes: 'h4 font-medium',
+    group: 'uniqueGroupName' // Group your notifications
+
+  })
+}
+function onOkDialog (dialogData) {
+      okDialogAttrs.value = dialogData
+      okDialogOpen.value = true
+}
 </script>

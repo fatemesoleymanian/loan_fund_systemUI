@@ -417,7 +417,7 @@ export default {
     exportFileName: {
       type: String,
       required: false,
-      default: 'وی-هتل'
+      default: 'صندوق'
     }
   },
 
@@ -543,7 +543,7 @@ export default {
       this.rowsValue = null
       pageSize = this.pagination != null ? this.pagination.rowsPerPage : pageSize
       pageNumber = this.pagination != null ? this.pagination.page : pageNumber
-      const query = `/${this.table.url}`
+      const query = `/${this.table.url}${this.filter != null && this.filter !== '' ? `/search=${this.filter}` : ''}`
       api.get(query).then(response => {
         const rowsValue = this.table.arrayKey != null ? response.data[this.table.arrayKey] : response.data
         const totalRecords = this.table.totalKey != null ? response.data[this.table.totalKey] : response.data.length

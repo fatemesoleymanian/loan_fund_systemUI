@@ -1,7 +1,7 @@
 <template>
   <q-page class="style">
       <CustomeTable
-        ref="tabel"
+        ref="table"
         :add
         @after-loaded="onAfterLoaded"
         :table="{
@@ -25,14 +25,17 @@
                   emit: 'on-select-all'
               },
           ]"
-          @on-multi-modify="onMultiModify"
+          @on-multi-modify="this.multiModifyDialog = true;"
           @on-select-all="onSelectAll"
           @on-add-button="memberInfoDialog = true"
           @on-delete-member="deleteMember"
           @on-edit-member="userInstance=$event;accountInstance=$event.account;memberInfoDialog = true"
           :columns="columns">
           <template v-slot:row-select="{ row }">
-                <q-checkbox class="style" v-model="row.select" />
+                <q-checkbox class="style" v-model="row.select" @click="saveDeselected(row)"/>
+              </template>
+            <template v-slot:row-id="{ row }">
+                <div>{{row.account == null ? '': row.account.account_number }}</div>
               </template>
             </CustomeTable>
 
@@ -40,7 +43,7 @@
         <card-panel ref="memberInfoDialogRef" :title="userInstance.id == null ? 'افزودن عضو جدید':'ویرایش اطلاعات عضو'" size="50%"
          @on-submit="userInstance.id == null ? addMember() : updateMember()"
          :disableNotify="false"
-        @on-success="userInstance.id == null ? addAccNumber() : addAccNumber('put')">
+        @on-success="userInstance.id == null ? addAccNumber($event) : addAccNumber($event,'put')">
 
           <template #body>
             <div class="row items-center">
@@ -107,6 +110,23 @@
           </template>
         </card-panel>
       </q-dialog>
+      <q-dialog v-model="multiModifyDialog" :persistent="true">
+        <card-panel ref="multiModifyDialogRef" title="ویرایش تعداد سهام برای اعضا" size="40%"
+         @on-submit="updateManyMembers"
+         :disableNotify="false"
+        @on-success="this.$refs.table.getRows();multiModifyDialog=false;">
+
+          <template #body>
+            <div class="row items-center">
+                <div class="col-12 col-sm-6">
+                  <q-input type="number" min="0" class="style" outlined dense hint="تعداد سهام"
+                  placeholder="تعداد سهام"
+                   v-model="stock_units"/>
+                </div>
+            </div>
+          </template>
+        </card-panel>
+      </q-dialog>
   </q-page>
 </template>
 
@@ -116,7 +136,6 @@ import { ref } from 'vue';
 import CustomeTable from 'src/components/CustomeTable.vue';
 import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
-import { event } from 'quasar';
 const columns = [
 {
   name: 'select',
@@ -125,9 +144,9 @@ const columns = [
   disable_search: true
 },
   {
-    name: 'account_number',
+    name: 'id',
     label: 'شماره حساب',
-    field: 'account_number',
+    field: 'id',
     disable_search: true,
   },
   {
@@ -164,7 +183,7 @@ const columns = [
         'q-btn': {
           menu: [
             {
-              title: 'ویرایش',
+              title: 'مشاهده/ویرایش',
               icon_name: 'info',
               icon_color: 'primary',
               emit: 'on-edit-member'
@@ -188,6 +207,7 @@ const columns = [
   }
 ]
 export default {
+
   setup () {
     return {
       userInstance: ref({
@@ -209,18 +229,17 @@ export default {
         status: true
       }),
       memberInfoDialog: ref(false),
-      columns
+      columns,
+      stock_units: ref(0),
+      deselecteds:ref([]),
+      selectAll: ref(false),
+      multiModifyDialog: ref(false)
     }
   },
   data(){
     },
   methods:{
     onAfterLoaded(rows){
-      const r = rows
-      r.forEach(row=>{
-       row.account_number = row.account.account_number
-      })
-      this.$refs.table.setRowsValue(r)
     },
     addMember(){
       this.accountInstance.member_name = this.userInstance.full_name
@@ -230,22 +249,65 @@ export default {
       })
     },
     async addAccNumber(response, method='post'){
-      this.accountInstance.member_id = response.member.id
+      if(method === 'post') this.accountInstance.member_id = response.member.id
       await api[method]('account',{...this.accountInstance}).then(res=>{
         this.memberInfoDialog = false;
-        this.$refs.tabel.getRows()
+        this.$refs.table.getRows()
       }).catch(error=>{
-        alert(error.message)
+        alert(error.response.data.message)
       })
     },
     updateMember(){
+      this.accountInstance.member_name = this.userInstance.full_name
+      this.accountInstance.member_id = this.userInstance.id
 
+      this.$refs.memberInfoDialogRef.submit({
+        url: 'member',
+        value : this.userInstance
+      },'put')
     },
-    deleteMember(){
-
+    async deleteMember(member){
+      this.$emit('on-ok-dialog', {
+        message: `آیا از حذف عضو اطمینان دارید؟`,
+        icon: 'delete',
+        color: 'negative',
+        textColor: 'white',
+        onOk: async () => {
+          await api.post('member/delete',{id:member.id}).then(res=>{
+        this.$refs.table.getRows()
+      }).catch(error=>{
+        alert(error.response.data.message)
+      })
+        }
+      })
     },
-    showMmeber(){
+    onSelectAll () {
+      this.stock_units = 0
+      this.selectAll = !this.selectAll
+      this.deselecteds = []
+      this.onSelectAllMembers()
+    },
+    saveDeselected (row) {
+      if (!row.select) {
+        this.deselecteds.push(row.id)
+      }
+    },
+    onSelectAllMembers () {
+      const r = this.$refs.table.getRowsValue()
+      const itemsNotInDeselecteds = r.filter(item => !this.deselecteds.includes(item.id))
+      if (itemsNotInDeselecteds.length > 0) {
+        itemsNotInDeselecteds.forEach(item => {
+          item.select = this.selectAll
+        })
+      }
+    },
+    updateManyMembers(){
+      const member_ids = this.$refs.table.getRowsValue().filter(item => item.select).map(item => item.id)
 
+      this.$refs.multiModifyDialogRef.submit({
+        url: 'member/update_stocks',
+        value : { member_ids , stock_units:this.stock_units}
+      },'put')
     }
   },
   components:{
