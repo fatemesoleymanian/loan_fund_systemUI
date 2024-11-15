@@ -1193,15 +1193,15 @@ border-radius: 15px;
   vertical-align: middle; /* Aligns the icon vertically in the middle */
 }
 
-.bg-parent-color{
-background-color: lighten($color: $primary, $amount: 44.5%);
-}
-.bg-warning-color{
-background-color: lighten($color: $warning, $amount: 40%);
-}
-.bg-item-color{
-background-color: lighten($color: $primary, $amount: 43%);
-}
+// .bg-parent-color{
+// background-color: lighten($color: $primary, $amount: 44.5%);
+// }
+// .bg-warning-color{
+// background-color: lighten($color: $warning, $amount: 40%);
+// }
+// .bg-item-color{
+// background-color: lighten($color: $primary, $amount: 43%);
+// }
 .search-item-class{
 border: solid;
 }

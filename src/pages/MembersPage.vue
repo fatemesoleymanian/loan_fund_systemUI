@@ -38,9 +38,9 @@
 
       <q-dialog v-model="memberInfoDialog" :persistent="true">
         <card-panel ref="memberInfoDialogRef" :title="userInstance.id == null ? 'افزودن عضو جدید':'ویرایش اطلاعات عضو'" size="50%"
-         @on-submit="userInstance.id == null ? addMember : updateMember"
+         @on-submit="userInstance.id == null ? addMember() : updateMember()"
          :disableNotify="false"
-        @on-success="userInstance.id == null ? addAccNumber : updateAccNumber">
+        @on-success="userInstance.id == null ? addAccNumber() : addAccNumber('put')">
 
           <template #body>
             <div class="row items-center">
@@ -220,7 +220,7 @@ export default {
       r.forEach(row=>{
        row.account_number = row.account.account_number
       })
-      this.$refs.table.setRows(r)
+      this.$refs.table.setRowsValue(r)
     },
     addMember(){
       this.accountInstance.member_name = this.userInstance.full_name
@@ -229,20 +229,9 @@ export default {
         value : this.userInstance
       })
     },
-    async addAccNumber(response){
+    async addAccNumber(response, method='post'){
       this.accountInstance.member_id = response.member.id
-
-      await api.post('account',{...this.accountInstance}).then(res=>{
-        this.memberInfoDialog = false;
-        this.$refs.tabel.getRows()
-      }).catch(error=>{
-        alert(error.message)
-      })
-    },
-    async updateAccNumber(response){
-      this.accountInstance.member_id = response.member.id
-
-      await api.put('account',{...this.accountInstance}).then(res=>{
+      await api[method]('account',{...this.accountInstance}).then(res=>{
         this.memberInfoDialog = false;
         this.$refs.tabel.getRows()
       }).catch(error=>{
