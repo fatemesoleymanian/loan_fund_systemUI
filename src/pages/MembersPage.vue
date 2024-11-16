@@ -2,7 +2,6 @@
   <q-page class="style">
       <CustomeTable
         ref="table"
-        :add
         @after-loaded="onAfterLoaded"
         :table="{
           url: 'member',
@@ -47,7 +46,6 @@
 
           <template #body>
             <div class="row items-center">
-              <div class="col-12 col-sm-7 row">
                 <div class="col-12 col-sm-6">
                   <q-input type="text" class="style" outlined dense hint="نام و نام خانوادگی"
                   placeholder="نام و نام خانوادگی"
@@ -105,8 +103,6 @@
                     v-model="accountInstance.account_number"/>
                 </div>
               </div>
-
-            </div>
           </template>
         </card-panel>
       </q-dialog>
