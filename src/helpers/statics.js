@@ -15,3 +15,13 @@ export async function membersList (){
  })
  return listt
 }
+export const fundAccTypeList = [
+  {
+    label:'قرض الحسنه',
+    value:0
+  },
+  {
+    label:'عادی',
+    value:1
+  }
+]
