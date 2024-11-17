@@ -15,6 +15,21 @@ export async function membersList (){
  })
  return listt
 }
+export async function monthlyChargeList (){
+  const listt = []
+ await api.get('monthly_charge/list').then(res=>{
+
+  res.data.monthly_charges.forEach(monthly=>{
+    listt.push({label:monthly.title , value:monthly.id})
+  })
+
+ }).catch(error=>{
+  if (error.response != null ) {
+    alert(error.response.data.message)
+  }
+ })
+ return listt
+}
 export const fundAccTypeList = [
   {
     label:'قرض الحسنه',

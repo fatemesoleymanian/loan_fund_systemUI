@@ -65,7 +65,12 @@ const linksList = [
     link: '#/loans'
   },
   {
-    title: 'اقساط و ماهیانه',
+    title: 'ماهیانه ها',
+    icon: 'code',
+    link: '#/charges'
+  },
+  {
+    title: 'اقساط ',
     icon: 'chat',
     link: '#/transactions'
   },

@@ -2,6 +2,7 @@
   <q-page class="style">
     فیلتر براساس و ویرایش چندتایی مونده***
     ***واریز / برداشت به حساب  ، بستن حساب
+    ****شروع ماهیانه اضافه بشه
       <CustomeTable
         ref="table"
         @after-loaded="onAfterLoaded"
@@ -34,13 +35,21 @@
             <template v-slot:row-description="{ row }">
                 <div>{{row.member == null ? '': row.member.stock_units }}</div>
               </template>
+              <template v-slot:row-monthly_charges="{ row }">
+                <div v-if="row.monthly_charges">
+                  <div v-for="m in row.monthly_charges" :key="m">
+                    {{ m.title }}
+                  </div>
+                </div>
+                <div v-else>ندارد</div>
+              </template>
             </CustomeTable>
 
       <q-dialog v-model="accountInfoDialog" :persistent="true">
         <card-panel ref="accountInfoDialogRef" :title="userInstance.id == null ? 'افزودن حساب جدید':'ویرایش اطلاعات حساب'" size="50%"
          @on-submit="userInstance.id == null ? addaccount() : updateaccount()"
          :disableNotify="false"
-        @on-success="addAccNumber">
+        @on-success="accountInstance.id == null ? addAccNumber($event) : addAccNumber($event,'put')">
 
           <template #body>
             <div class="row items-center" v-if="userInstance.id != null">
@@ -149,9 +158,14 @@
                 <div class="col-12 text-center h3-4 text-dark q-pa-lg font-bold">اطلاعات وام</div>
                 <div>{{ accountInstance.loans }}</div>
               </div>
-              <div class="row items-center" v-if="userInstance.id != null">
+              <div class="row items-center">
                 <div class="col-12 text-center h3-4 text-dark q-pa-lg font-bold">اطلاعات ماهیانه</div>
-                <div>{{ accountInstance.monthlyCharges }}</div>
+                <div>
+                <SelectionInput dense
+                    :option-list="monthlyCharges"
+                    @on-update-model="monthlyChargeInstance.monthly_charge_id=$event.value"
+                    label="ماهیانه" />
+                    </div>
               </div>
           </template>
         </card-panel>
@@ -183,7 +197,7 @@ import CustomeTable from 'src/components/CustomeTable.vue';
 import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
 import SelectionInput from 'src/components/SelectionInput.vue';
-import { membersList } from 'src/helpers/statics';
+import { membersList, monthlyChargeList } from 'src/helpers/statics';
 const columns = [
 {
   name: 'select',
@@ -222,9 +236,9 @@ const columns = [
     disable_search: true,
   },
   {
-    name: 'monthlyCharges',
+    name: 'monthly_charges',
     label: 'نوع ماهیانه',
-    field: 'monthlyCharges',
+    field: 'monthly_charges',
     disable_search: true,
   },
   {
@@ -305,13 +319,18 @@ export default {
         loans:[],
         monthlyCharges:[]
       }),
+      monthlyChargeInstance:ref({
+        account_id:null,
+        monthly_charge_id:null
+      }),
       accountInfoDialog: ref(false),
       columns,
       stock_units: ref(0),
       deselecteds:ref([]),
       selectAll: ref(false),
       multiModifyDialog: ref(false),
-      members:ref([])
+      members:ref([]),
+      monthlyCharges:ref([])
     }
   },
   data(){
@@ -319,6 +338,7 @@ export default {
   methods:{
     async onAfterLoaded(rows){
       this.members = await membersList()
+      this.monthlyCharges = await monthlyChargeList()
     },
     addaccount(){
       this.$refs.accountInfoDialogRef.submit({
@@ -326,14 +346,15 @@ export default {
         value : this.accountInstance
       })
     },
-    async addAccNumber(){
-      // if(method === 'post') this.accountInstance.account_id = response.account.id
-      // await api[method]('account',{...this.accountInstance}).then(res=>{
+    async addAccNumber(response, method='post'){
+        /**TODO */
+       this.monthlyChargeInstance.account_id = this.accountInstance.id
+      await api.post('monthly_charge_member',{...this.monthlyChargeInstance}).then(res=>{
         this.accountInfoDialog = false;
         this.$refs.table.getRows()
-      // }).catch(error=>{
-      //   alert(error.response.data.message)
-      // })
+      }).catch(error=>{
+        alert(error.response.data.message)
+      })
     },
     updateaccount(){
 
