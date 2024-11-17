@@ -1,6 +1,7 @@
 <template>
   <q-page class="style">
-    فیلتر براساس و ویرایش چندتایی مونده
+    فیلتر براساس و ویرایش چندتایی مونده***
+    ***واریز / برداشت به حساب  ، بستن حساب
       <CustomeTable
         ref="table"
         @after-loaded="onAfterLoaded"
@@ -8,11 +9,7 @@
           url: 'account',
           arrayKey: 'accounts'
           }"
-            :add_button="
-              {
-                  label: 'حساب جدید',
-                  icon: 'add'
-              }"
+
               :extra_buttons="[
               {
                   label: 'ویرایش سهم',
@@ -36,9 +33,6 @@
               </template>
             <template v-slot:row-description="{ row }">
                 <div>{{row.member == null ? '': row.member.stock_units }}</div>
-              </template>
-              <template v-slot:row-status="{ row }">
-                <div>{{row.status ? 'فعال': 'غیرفعال' }}</div>
               </template>
             </CustomeTable>
 
@@ -123,7 +117,7 @@
                     v-model="accountInstance.account_number"/>
 
                 </div>
-                <div class="col-12 col-sm-6">
+                <!-- <div class="col-12 col-sm-6">
                   <q-input dense
                     type="text"
                     class="style"
@@ -131,13 +125,12 @@
                     placeholder="موجودی"
                     hint="موجودی"
                     v-model="accountInstance.balance"/>
-                </div>
+                </div> -->
                 <div class="col-12 col-sm-6 row">
                   <div class="h5-6">وضعیت حساب : </div>
                   <q-btn color="primary"
-                   :label="accountInstance.status == 1 || accountInstance.status? 'فعال':'غیرفعال'"
-                    @click="accountInstance.status=!accountInstance.status"
-                    :outline="!accountInstance.status"/>
+                   :label="accountInstance.status"
+                    :outline="accountInstance.status === 'بدهکار'"/>
                 </div>
                 <div class="col-12 col-sm-6">
                   <q-input dense
@@ -155,6 +148,10 @@
             <div class="row items-center" v-if="userInstance.id != null">
                 <div class="col-12 text-center h3-4 text-dark q-pa-lg font-bold">اطلاعات وام</div>
                 <div>{{ accountInstance.loans }}</div>
+              </div>
+              <div class="row items-center" v-if="userInstance.id != null">
+                <div class="col-12 text-center h3-4 text-dark q-pa-lg font-bold">اطلاعات ماهیانه</div>
+                <div>{{ accountInstance.monthlyCharges }}</div>
               </div>
           </template>
         </card-panel>
@@ -219,15 +216,21 @@ const columns = [
     disable_search: true,
   },
   {
-    name: 'created_at',
-    label: 'تاریخ ایجاد حساب',
-    field: 'created_at',
-    disable_search: true,
-  },
-  {
     name: 'status',
     label: 'وضعیت',
     field: 'status',
+    disable_search: true,
+  },
+  {
+    name: 'monthlyCharges',
+    label: 'نوع ماهیانه',
+    field: 'monthlyCharges',
+    disable_search: true,
+  },
+  {
+    name: 'created_at',
+    label: 'تاریخ ایجاد حساب',
+    field: 'created_at',
     disable_search: true,
   },
   {
@@ -244,6 +247,18 @@ const columns = [
               icon_name: 'info',
               icon_color: 'primary',
               emit: 'on-edit-account'
+            },
+            {
+              title: 'واریز به حساب',
+              icon_name: 'info',
+              icon_color: 'primary',
+              emit: 'on-edit-member'
+            },
+            {
+              title: 'برداشت از حساب',
+              icon_name: 'info',
+              icon_color: 'primary',
+              emit: 'on-edit-member'
             },
             {
               title: 'حذف',
@@ -283,11 +298,12 @@ export default {
         balance: 0,
         account_number: '',
         account_name: '',
-        status: true,
+        status: '',
         member_id:'',
         member_name:'',
         description:'',
-        loans:[]
+        loans:[],
+        monthlyCharges:[]
       }),
       accountInfoDialog: ref(false),
       columns,

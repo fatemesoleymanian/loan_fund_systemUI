@@ -1,5 +1,6 @@
 <template>
   <q-page class="style">
+    ***سوال: موجودی رو بتونه اینجا ست کنه؟ ***
       <CustomeTable
         ref="table"
         @after-loaded="onAfterLoaded"
@@ -26,7 +27,20 @@
           ]"
           @on-multi-modify="this.multiModifyDialog = true;"
           @on-select-all="onSelectAll"
-          @on-add-button="memberInfoDialog = true"
+          @on-add-button="userInstance = {  id:null,
+        full_name: '',
+        mobile_number: '',
+        telephone_number: '',
+        father_name: '',
+        fax: '',
+        stock_units: '',
+        address: '',};accountInstance={
+          member_id: '',
+        balance: 0,
+        account_number: '',
+        member_name: '',
+        status: 'بدهکار'
+        };memberInfoDialog = true"
           @on-delete-member="deleteMember"
           @on-edit-member="userInstance=$event;accountInstance=$event.account;memberInfoDialog = true"
           :columns="columns">
@@ -220,9 +234,9 @@ export default {
       accountInstance: ref({
         member_id: '',
         balance: 0,
-        account_number: '',
+        account_number: null,
         member_name: '',
-        status: true
+        status: 'بدهکار'
       }),
       memberInfoDialog: ref(false),
       columns,
