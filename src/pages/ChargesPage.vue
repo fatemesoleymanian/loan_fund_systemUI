@@ -241,7 +241,6 @@ export default {
           { label:element.status},
           {label:element.created_at}])
       });
-      console.log(this.accountsTable.rows)
 
       this.monthlyChargeAccountsDialog=true
     }

@@ -104,9 +104,7 @@
                 </div>
               </div>
               <div v-if="showInstallments" class="row items-center">
-                <div v-for="inst in loanInstance.installments" :key="inst" class="col-4">
-                    {{ inst }}
-                </div>
+                <simple-table :init_rows="installmentTable.rows" :init_columns="installmentTable.columns" />
               </div>
           </template>
         </card-panel>
@@ -121,6 +119,7 @@ import CustomeTable from 'src/components/CustomeTable.vue';
 import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
 import { getJalaliDate } from 'src/helpers/dateOutputs';
+import SimpleTable from 'src/components/SimpleTable.vue';
 const columns = [
   {
     name: 'id',
@@ -221,6 +220,22 @@ export default {
     }
   },
   data(){
+    return{
+      installmentTable:{
+        rows:[],
+        columns:[
+        {
+            label: 'شماره قسط'
+          },
+          {
+            label: 'مبلغ قسط'
+          },
+          {
+            label: 'تاریخ سررسید قسط'
+          }
+        ]
+      }
+    }
     },
   methods:{
     onAfterLoaded(rows){
@@ -232,6 +247,12 @@ export default {
       }
     },
     addloan(){
+      this.loanInstance.installments.forEach(element=>{
+        this.installmentTable.rows.push([
+          {label:element.inst_number },
+          { label:element.amount_due} ,
+          {label:element.due_date}])
+      })
       this.showInstallments = true
 
       // this.$refs.loanInfoDialogRef.submit({
@@ -275,20 +296,28 @@ export default {
     calculateInstallmentDates(dueDate, numberOfInstallments, intervalDays=30) {
     const installmentDates = [];
     const startDate = new Date(dueDate); // Convert due date to a Date object
+    const amount = this.loanInstance.principal_amount / this.loanInstance.number_of_installments
 
     for (let i = 0; i < numberOfInstallments; i++) {
         const nextDate = new Date(startDate);
         nextDate.setDate(startDate.getDate() + i * intervalDays); // Increment by intervalDays
         installmentDates.push(nextDate.toISOString().split('T')[0]); // Format as YYYY-MM-DD
-    }
 
-    this.loanInstance.installments = installmentDates
+    }
+    installmentDates.forEach((inst,index)=>{
+      this.loanInstance.installments.push({
+          due_date:inst,
+          amount_due:amount,
+          inst_number:`قسط شماره ${index} `
+        })
+    })
     this.loanInstance.end_date = installmentDates[this.loanInstance.number_of_installments-1]
 }
   },
   components:{
     CustomeTable,
-    CardPanel
+    CardPanel,
+    SimpleTable
   }
 }
 </script>
