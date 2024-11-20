@@ -40,3 +40,36 @@ export const fundAccTypeList = [
     value:1
   }
 ]
+export const transactionTypes =[
+  {
+    label:'واریز',
+    value:0
+  },
+  {
+    label:'برداشت',
+    value:1
+  },
+  {
+    label:'پرداخت کارمزد',
+    value:2
+  },
+  {
+    label:'پرداخت جریمه',
+    value:3
+  },
+  {
+    label:'پرداخت قسط',
+    value:4
+  },
+  {
+    label:'پرداخت وام',
+    value:5
+  },
+  {
+    label:'پرداخت ماهیانه',
+    value:6
+  }
+]
+export async function fundAccountList(){
+await api.get('/fund_accounts/list')
+}

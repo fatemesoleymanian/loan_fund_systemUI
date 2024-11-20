@@ -16,7 +16,7 @@
           @on-add-button="monthlyChargeInstance={ id: null,amount: 0,year: year,title: ''};monthlyChargeInfoDialog = true"
           @on-delete-monthlyCharge="deletemonthlyCharge"
           @on-edit-monthlyCharge="monthlyChargeInstance=$event;monthlyChargeInfoDialog = true"
-          @on-accounts-monthlyCharge="monthlyChargeInstance.accounts = $event.accounts;monthlyChargeAccountsDialog=true;"
+          @on-accounts-monthlyCharge="showAccounts"
           :columns="columns"/>
 
       <q-dialog v-model="monthlyChargeInfoDialog" :persistent="true">
@@ -63,9 +63,11 @@
 
           <template #body>
             <div class="row items-center">
-                <div class="col-12 col-sm-6" v-for="acc in monthlyChargeInstance.accounts" :key="acc">
+
+              <simple-table :init_rows="accountsTable.rows" :init_columns="accountsTable.columns" />
+                <!-- <div class="col-12 col-sm-6" v-for="acc in monthlyChargeInstance.accounts" :key="acc">
                 {{ acc.member_name }}
-                </div>
+                </div> -->
               </div>
           </template>
         </card-panel>
@@ -80,6 +82,7 @@ import CustomeTable from 'src/components/CustomeTable.vue';
 import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
 import { getJalaliDate } from 'src/helpers/dateOutputs';
+import SimpleTable from 'src/components/SimpleTable.vue';
 const columns = [
 // {
 //   name: 'select',
@@ -169,6 +172,28 @@ export default {
     }
   },
   data(){
+    return{
+      accountsTable:{
+        rows:[],
+        columns:[
+          {
+            label: 'نام حساب'
+          },
+          {
+            label: 'شماره حساب'
+          },
+          {
+            label: 'موجودی حساب'
+          },
+          {
+            label: 'وضعیت حساب'
+          },
+          {
+            label: 'تاریخ عضویت حساب'
+          }
+        ]
+      }
+    }
 
     },
   methods:{
@@ -201,13 +226,26 @@ export default {
         }
       })
     },
-    // async showAccounts(){
-    //   await api.get()
-    // }
+     showAccounts(charge){
+      this.monthlyChargeInstance.accounts = charge.accounts
+      charge.accounts.forEach(element => {
+
+        this.accountsTable.rows.push([
+          {label:element.member_name },
+          { label:element.account_number} ,
+          {label:element.balance},
+          { label:element.status},
+          {label:element.created_at}])
+      });
+      console.log(this.accountsTable.rows)
+
+      this.monthlyChargeAccountsDialog=true
+    }
   },
   components:{
     CustomeTable,
-    CardPanel
+    CardPanel,
+    SimpleTable
   }
 }
 </script>

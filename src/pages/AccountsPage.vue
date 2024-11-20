@@ -1,8 +1,8 @@
 <template>
   <q-page class="style">
+    {{ transactionsTypes }}
     فیلتر براساس و ویرایش چندتایی مونده***
     ***واریز / برداشت به حساب  ، بستن حساب
-    ****شروع ماهیانه اضافه بشه
       <CustomeTable
         ref="table"
         @after-loaded="onAfterLoaded"
@@ -28,12 +28,16 @@
           @on-add-button="accountInfoDialog = true"
           @on-delete-account="deleteaccount"
           @on-edit-account="accountInstance=$event;userInstance=$event.member;accountInfoDialog = true"
-          :columns="columns">
+          :columns="columns"
+          @on-create-transaction="transactionInstance.account_id=$event.id;accountInstance.balance=$event.balance;createTransactionDialog=true">
           <template v-slot:row-select="{ row }">
                 <q-checkbox class="style" v-model="row.select" @click="saveDeselected(row)"/>
               </template>
             <template v-slot:row-description="{ row }">
                 <div>{{row.member == null ? '': row.member.stock_units }}</div>
+              </template>
+              <template v-slot:row-created_at="{ row }">
+                <div class="h5">{{row.created_at }}</div>
               </template>
               <template v-slot:row-monthly_charges="{ row }">
                 <div v-if="row.monthly_charges">
@@ -46,7 +50,8 @@
             </CustomeTable>
 
       <q-dialog v-model="accountInfoDialog" :persistent="true">
-        <card-panel ref="accountInfoDialogRef" :title="userInstance.id == null ? 'افزودن حساب جدید':'ویرایش اطلاعات حساب'" size="50%"
+        <card-panel ref="accountInfoDialogRef" :title="userInstance.id == null ? 'افزودن حساب جدید':'ویرایش اطلاعات حساب'"
+         size="85%"
          @on-submit="userInstance.id == null ? addaccount() : updateaccount()"
          :disableNotify="false"
         @on-success="accountInstance.id == null ? addAccNumber($event) : addAccNumber($event,'put')">
@@ -164,7 +169,8 @@
                 <SelectionInput dense
                     :option-list="monthlyCharges"
                     @on-update-model="monthlyChargeInstance.monthly_charge_id=$event.value"
-                    label="ماهیانه" />
+                    label="ماهیانه"
+                    :value="{label:accountInstance.monthly_charges[0].title ,value:accountInstance.monthly_charges[0].id}"/>
                     </div>
               </div>
           </template>
@@ -187,6 +193,39 @@
           </template>
         </card-panel>
       </q-dialog>
+      <q-dialog v-model="createTransactionDialog" :persistent="true">
+        <card-panel ref="createTransactionDialogRef"
+        title="واریز / برداشت" size="50%"
+         @on-submit="updateManyaccounts"
+         :disableNotify="false"
+        @on-success="this.$refs.table.getRows();multiModifyDialog=false;">
+
+          <template #body>
+            <div class="row items-center">
+              <div class="col-12 col-sm-6">
+                موجودی : {{ accountInstance.balance }}
+              </div>
+              <div class="col-12 col-sm-6">
+                <SelectionInput label="صندوق" @update:model-value="transactionInstance.fund_account_id=$event.value"/>
+              </div>
+              <div class="col-12 col-sm-6">
+                <SelectionInput label="نوع تراکنش" @update:model-value="transactionInstance.type=$event.label"/>
+              </div>
+                <div class="col-12 col-sm-6">
+                  <q-input type="number" min="0" class="style" outlined dense hint="مبلغ"
+                  placeholder="مبلغ"
+                   v-model="transactionInstance.amount"/>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <q-input type="textarea" class="style" outlined dense hint="توضیح"
+                  placeholder="توضیح"
+                   v-model="transactionInstance.descsample"/>
+                </div>
+            </div>
+          </template>
+        </card-panel>
+      </q-dialog>
+
   </q-page>
 </template>
 
@@ -197,7 +236,7 @@ import CustomeTable from 'src/components/CustomeTable.vue';
 import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
 import SelectionInput from 'src/components/SelectionInput.vue';
-import { membersList, monthlyChargeList } from 'src/helpers/statics';
+import { membersList, monthlyChargeList, transactionTypes } from 'src/helpers/statics';
 const columns = [
 {
   name: 'select',
@@ -263,16 +302,10 @@ const columns = [
               emit: 'on-edit-account'
             },
             {
-              title: 'واریز به حساب',
+              title: 'واریز/برداشت ',
               icon_name: 'info',
               icon_color: 'primary',
-              emit: 'on-edit-member'
-            },
-            {
-              title: 'برداشت از حساب',
-              icon_name: 'info',
-              icon_color: 'primary',
-              emit: 'on-edit-member'
+              emit: 'on-create-transaction'
             },
             {
               title: 'حذف',
@@ -317,11 +350,19 @@ export default {
         member_name:'',
         description:'',
         loans:[],
-        monthlyCharges:[]
+        monthly_charges:[{title:'',value:0}]
       }),
       monthlyChargeInstance:ref({
         account_id:null,
         monthly_charge_id:null
+      }),
+      transactionInstance:ref({
+        account_id:null,
+        amount:0,
+        type:'واریز',
+        description:'واریز به حساب علی سلیمانیان',
+        fund_account_id:null,
+        descsample:''
       }),
       accountInfoDialog: ref(false),
       columns,
@@ -334,6 +375,9 @@ export default {
     }
   },
   data(){
+    return{
+      transactionsTypes:transactionTypes.slice(0,2)
+    }
     },
   methods:{
     async onAfterLoaded(rows){
