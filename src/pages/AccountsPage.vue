@@ -169,7 +169,7 @@
                     :option-list="monthlyCharges"
                     @on-update-model="monthlyChargeInstance.monthly_charge_id=$event.value"
                     label="ماهیانه"
-                    :value="{label:accountInstance.monthly_charges[0].title ,value:accountInstance.monthly_charges[0].id}"/>
+                    :value="accountInstance.monthly_charges.length <1 ?{}:{label:accountInstance.monthly_charges[0].title ,value:accountInstance.monthly_charges[0].id}"/>
                     </div>
               </div>
           </template>
@@ -239,6 +239,7 @@ import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
 import SelectionInput from 'src/components/SelectionInput.vue';
 import { fundAccountList, membersList, monthlyChargeList, transactionTypes } from 'src/helpers/statics';
+import { getJalaliDate } from 'src/helpers/dateOutputs';
 const columns = [
 {
   name: 'select',
@@ -309,12 +310,12 @@ const columns = [
               icon_color: 'primary',
               emit: 'on-create-transaction'
             },
-            {
-              title: 'حذف',
-              icon_name: 'delete',
-              icon_color: 'primary',
-              emit: 'on-delete-account'
-            },
+            // {
+            //   title: 'حذف',
+            //   icon_name: 'delete',
+            //   icon_color: 'primary',
+            //   emit: 'on-delete-account'
+            // },
           ],
           color: 'primary',
           size: 'xs',
@@ -330,6 +331,7 @@ const columns = [
 export default {
 
   setup () {
+    const {year , month , day} = getJalaliDate()
     return {
       userInstance: ref({
         id:null,
@@ -356,7 +358,8 @@ export default {
       }),
       monthlyChargeInstance:ref({
         account_id:null,
-        monthly_charge_id:null
+        monthly_charge_id:null,
+        year:year
       }),
       transactionInstance:ref({
         account_id:null,
