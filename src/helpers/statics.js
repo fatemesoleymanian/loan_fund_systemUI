@@ -71,5 +71,17 @@ export const transactionTypes =[
   }
 ]
 export async function fundAccountList(){
-await api.get('/fund_accounts/list')
+  const listt = []
+await api.get('fund_account').then(res=>{
+
+  res.data.fund_accounts.forEach(acc=>{
+    listt.push({label:acc.name , value:acc.id})
+  })
+
+ }).catch(error=>{
+  if (error.response != null ) {
+    alert(error.response.data.message)
+  }
+ })
+ return listt
 }

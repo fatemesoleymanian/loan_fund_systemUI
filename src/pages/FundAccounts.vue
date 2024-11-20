@@ -16,7 +16,11 @@
           @on-add-button="accountInstance={ id: null,balance: 0,account_number: null,name: '',type: 'قرض الحسنه'};balance_change=0;fundAccountInfoDialog = true"
           @on-delete-fundAccount="deletefundAccount"
           @on-edit-fundAccount="accountInstance=$event;fundAccountInfoDialog = true"
-          :columns="columns"/>
+          :columns="columns">
+          <template v-slot:row-created_at="{ row }">
+                <div class="h5">{{row.created_at }}</div>
+              </template>
+          </CustomeTable>
 
       <q-dialog v-model="fundAccountInfoDialog" :persistent="true">
         <card-panel ref="fundAccountInfoDialogRef" :title="accountInstance.id == null ? 'افزودن حساب صندوق جدید':'ویرایش اطلاعات حساب صندوق'" size="50%"

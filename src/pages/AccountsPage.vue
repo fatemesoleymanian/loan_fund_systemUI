@@ -1,8 +1,7 @@
 <template>
   <q-page class="style">
-    {{ transactionsTypes }}
     فیلتر براساس و ویرایش چندتایی مونده***
-    ***واریز / برداشت به حساب  ، بستن حساب
+    *** بستن حساب
       <CustomeTable
         ref="table"
         @after-loaded="onAfterLoaded"
@@ -196,30 +195,33 @@
       <q-dialog v-model="createTransactionDialog" :persistent="true">
         <card-panel ref="createTransactionDialogRef"
         title="واریز / برداشت" size="50%"
-         @on-submit="updateManyaccounts"
+         @on-submit="createTransaction"
          :disableNotify="false"
-        @on-success="this.$refs.table.getRows();multiModifyDialog=false;">
-
+        @on-success="this.$refs.table.getRows();createTransactionDialog=false;">
           <template #body>
             <div class="row items-center">
-              <div class="col-12 col-sm-6">
+              <div class="col-12 text-center font-bold">
                 موجودی : {{ accountInstance.balance }}
               </div>
-              <div class="col-12 col-sm-6">
-                <SelectionInput label="صندوق" @update:model-value="transactionInstance.fund_account_id=$event.value"/>
+              <div class="col-12 ">
+                <SelectionInput dense label="صندوق"
+                :option-list="fundAccountsList"
+                @update:model-value="transactionInstance.fund_account_id=$event.value"/>
               </div>
-              <div class="col-12 col-sm-6">
-                <SelectionInput label="نوع تراکنش" @update:model-value="transactionInstance.type=$event.label"/>
+              <div class="col-12 ">
+                <SelectionInput dense label="نوع تراکنش"
+                :option-list="transactionsTypes"
+                 @update:model-value="transactionInstance.type=$event.label;transactionInstance.description=`بابت ${$event.label} حساب `"/>
               </div>
-                <div class="col-12 col-sm-6">
+                <div class="col-12 ">
                   <q-input type="number" min="0" class="style" outlined dense hint="مبلغ"
                   placeholder="مبلغ"
                    v-model="transactionInstance.amount"/>
                 </div>
-                <div class="col-12 col-sm-6">
+                <div class="col-12 ">
                   <q-input type="textarea" class="style" outlined dense hint="توضیح"
                   placeholder="توضیح"
-                   v-model="transactionInstance.descsample"/>
+                   v-model="transactionInstance.description"/>
                 </div>
             </div>
           </template>
@@ -236,7 +238,7 @@ import CustomeTable from 'src/components/CustomeTable.vue';
 import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
 import SelectionInput from 'src/components/SelectionInput.vue';
-import { membersList, monthlyChargeList, transactionTypes } from 'src/helpers/statics';
+import { fundAccountList, membersList, monthlyChargeList, transactionTypes } from 'src/helpers/statics';
 const columns = [
 {
   name: 'select',
@@ -358,20 +360,21 @@ export default {
       }),
       transactionInstance:ref({
         account_id:null,
-        amount:0,
-        type:'واریز',
-        description:'واریز به حساب علی سلیمانیان',
-        fund_account_id:null,
-        descsample:''
+        amount:null,
+        type:'',
+        description:'',
+        fund_account_id:null
       }),
       accountInfoDialog: ref(false),
+      createTransactionDialog: ref(false),
       columns,
       stock_units: ref(0),
       deselecteds:ref([]),
       selectAll: ref(false),
       multiModifyDialog: ref(false),
       members:ref([]),
-      monthlyCharges:ref([])
+      monthlyCharges:ref([]),
+      fundAccountsList:ref([])
     }
   },
   data(){
@@ -383,6 +386,7 @@ export default {
     async onAfterLoaded(rows){
       this.members = await membersList()
       this.monthlyCharges = await monthlyChargeList()
+      this.fundAccountsList = await fundAccountList()
     },
     addaccount(){
       this.$refs.accountInfoDialogRef.submit({
@@ -449,7 +453,12 @@ export default {
         url: 'account/update_stocks',
         value : { account_ids , stock_units:this.stock_units}
       },'put')
-    }
+    },
+    createTransaction(){
+      this.$refs.createTransactionDialogRef.submit({
+        url: 'transaction',
+        value : this.transactionInstance
+      })    }
   },
   components:{
     CustomeTable,

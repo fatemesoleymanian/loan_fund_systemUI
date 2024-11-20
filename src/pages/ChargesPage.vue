@@ -17,7 +17,11 @@
           @on-delete-monthlyCharge="deletemonthlyCharge"
           @on-edit-monthlyCharge="monthlyChargeInstance=$event;monthlyChargeInfoDialog = true"
           @on-accounts-monthlyCharge="showAccounts"
-          :columns="columns"/>
+          :columns="columns">
+          <template v-slot:row-created_at="{ row }">
+                <div class="h5">{{row.created_at }}</div>
+              </template>
+          </CustomeTable>
 
       <q-dialog v-model="monthlyChargeInfoDialog" :persistent="true">
         <card-panel ref="monthlyChargeInfoDialogRef" :title="monthlyChargeInstance.id == null ? 'افزودن ماهیانه جدید':'ویرایش اطلاعات ماهیانه'" size="50%"

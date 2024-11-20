@@ -50,6 +50,9 @@
             <template v-slot:row-id="{ row }">
                 <div>{{row.account == null ? '': row.account.account_number }}</div>
               </template>
+              <template v-slot:row-created_at="{ row }">
+                <div class="h5">{{row.created_at }}</div>
+              </template>
             </CustomeTable>
 
       <q-dialog v-model="memberInfoDialog" :persistent="true">

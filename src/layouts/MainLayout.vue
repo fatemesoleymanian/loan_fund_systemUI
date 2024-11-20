@@ -70,7 +70,7 @@ const linksList = [
     link: '#/charges'
   },
   {
-    title: 'اقساط ',
+    title: 'تراکنش ها ',
     icon: 'chat',
     link: '#/transactions'
   },
