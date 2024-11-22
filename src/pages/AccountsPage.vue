@@ -2,6 +2,9 @@
   <q-page class="style">
     فیلتر براساس و ویرایش چندتایی مونده***
     *** بستن حساب
+    ***اطالاعات وام و ماهیانه کامل شود
+    <div class="row justify-center text-black h2">حساب ها</div>
+
       <CustomeTable
         ref="table"
         @after-loaded="onAfterLoaded"

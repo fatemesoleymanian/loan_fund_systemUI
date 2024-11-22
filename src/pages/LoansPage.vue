@@ -3,6 +3,8 @@
    ////، ازکدوم صندوق وام به شخص پرداخت شه کی بپرسم؟
    //سود و کارمزد رو هم باید حساب کنم.
    //کی بریزم به حساب
+   <div class="row justify-center text-black h2">وام ها</div>
+
       <CustomeTable
         ref="table"
         @after-loaded="onAfterLoaded"
@@ -21,6 +23,7 @@
             type: 'وام قرض الحسنه',
             issue_date: null,
             number_of_installments: 0,
+            fee:4,
             end_date: null,
             status: true,
             year: year,
@@ -68,6 +71,13 @@
                   placeholder="تعداد اقساط"
                    v-model="loanInstance.number_of_installments"/>
                 </div>
+                <div class="col-12 col-sm-6">
+                  <q-input type="number" class="style" outlined dense
+                  hint="کارمزد" style="display: inline-block;max-width: 150px;"
+                  placeholder="کارمزد"
+                   v-model="loanInstance.fee"/>
+                   <span class="q-px-sm">{{ Math.round((Number(loanInstance.principal_amount) * 4) / 100) }} ریال </span>
+                </div>
                 <div class="col-12 col-sm-6" >
                   <q-input type="number" class="style" outlined dense
                   hint="فاصله اقساط"
@@ -107,12 +117,10 @@
                 </div>
                 <div class="col-12 col-sm-6">
                   <q-toggle v-model="loanInstance.status" label="وضعیت"/>
-                </div>
-                <div class="col-12 col-sm-6">
-                <q-btn label="قسط بندی " unelevated
-              color="primary" class="col-6 style col-sm-3" style="max-width: 200px;"
+                  <q-btn label="قسط بندی " unelevated outline
+              color="primary" class="style" style="margin-left: auto;"
                @click="calculation" />
-              </div>
+                </div>
               </div>
               <div v-if="showInstallments" class="row items-center">
                 <simple-table :init_rows="installmentTable.rows" :init_columns="installmentTable.columns" />
@@ -260,6 +268,7 @@ export default {
         type: 'وام قرض الحسنه',
         issue_date: null,
         number_of_installments: 0,
+        fee:4,
         end_date: null,
         status: true,
         year: year,

@@ -1,4 +1,3 @@
-import { data } from "autoprefixer";
 import { api } from "src/boot/axios";
 
 export async function membersList (){

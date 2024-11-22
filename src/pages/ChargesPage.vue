@@ -1,5 +1,7 @@
 <template>
   <q-page class="style">
+    <div class="row justify-center text-black h2">ماهیانه ها</div>
+
       <CustomeTable
         ref="table"
         @after-loaded="onAfterLoaded"

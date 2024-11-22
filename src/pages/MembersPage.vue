@@ -1,6 +1,8 @@
 <template>
   <q-page class="style">
     ***سوال: موجودی رو بتونه اینجا ست کنه؟ ***
+    <div class="row justify-center text-black h2">دفترچه تلفن</div>
+
       <CustomeTable
         ref="table"
         @after-loaded="onAfterLoaded"

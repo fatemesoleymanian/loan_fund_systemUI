@@ -1,5 +1,7 @@
 <template>
   <q-page class="style">
+    <div class="row justify-center text-black h2">مدیریت حساب های صندوق</div>
+
       <CustomeTable
         ref="table"
         @after-loaded="onAfterLoaded"
