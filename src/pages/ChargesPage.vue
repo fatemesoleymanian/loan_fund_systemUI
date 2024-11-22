@@ -59,15 +59,11 @@
           </template>
         </card-panel>
       </q-dialog>
-      <q-dialog v-model="monthlyChargeAccountsDialog" :persistent="true">
+      <q-dialog v-model="monthlyChargeAccountsDialog" >
         <card-panel ref="monthlyChargeAccountsRef" title="حساب های ماهیانه" size="50%"
-         @on-submit="monthlyChargeInstance.id == null ? addmonthlyCharge() : updatemonthlyCharge()"
-         :disableNotify="false"
-        @on-success="this.$refs.table.getRows();monthlyChargeInfoDialog=false;">
-
+        :hide_actions="true">
           <template #body>
             <div class="row items-center">
-
               <simple-table :init_rows="accountsTable.rows" :init_columns="accountsTable.columns" />
                 <!-- <div class="col-12 col-sm-6" v-for="acc in monthlyChargeInstance.accounts" :key="acc">
                 {{ acc.member_name }}

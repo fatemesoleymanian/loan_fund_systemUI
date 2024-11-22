@@ -1,7 +1,8 @@
 <template>
   <q-page class="style">
-   ////، ازکدوم صندوق وام به شخص پرداخت شه اعطای وام
+   ////، ازکدوم صندوق وام به شخص پرداخت شه کی بپرسم؟
    //سود و کارمزد رو هم باید حساب کنم.
+   //کی بریزم به حساب
       <CustomeTable
         ref="table"
         @after-loaded="onAfterLoaded"
@@ -28,6 +29,7 @@
             intervalDays:1};loanInfoDialog = true"
           @on-delete-loan="deleteloan"
           @on-edit-loan="onEditLoan"
+          @on-apply-to-account="showAccounts"
           :columns="columns">
               <template v-slot:row-issue_date="{ row }">
                 <div class="h4-5">{{row.issue_date }}</div>
@@ -118,6 +120,39 @@
           </template>
         </card-panel>
       </q-dialog>
+      <q-dialog v-model="showAccsDialog">
+        <card-panel ref="showAccsDialogRef" title="حساب ها " size="50%" :hide_actions="true">
+          <template #body>
+            <div class="row items-center">
+              <simple-table v-if="accountsTable.rows.length>0" :init_rows="accountsTable.rows" :init_columns="accountsTable.columns" />
+                <div v-else>حسابی پیدا نشد!</div>
+              </div>
+          </template>
+        </card-panel>
+      </q-dialog>
+      <q-dialog v-model="appliedAccsDialog" :persistent="true">
+        <card-panel ref="appliedAccsDialogRef" title="اعطای وام" size="50%"
+         @on-submit="applyLoanToAccounts"
+         :disableNotify="false"
+        @on-success="appliedAccsDialog=false;">
+          <template #body>
+            <div class="row items-center">
+                <div class="col-12">
+                  <SelectionInput
+                    :option-list="accounts"
+                     multible
+                     :value="this.accountsInstance.account_ids"
+                    @on-update-model="updateAccounts"
+                    label="حساب (ها)" />
+                </div>
+              </div>
+              <div class="row items-center">
+              <simple-table v-if="accountsTable.rows.length>0" :init_rows="accountsTable.rows" :init_columns="accountsTable.columns" />
+                <div v-else>حسابی پیدا نشد!</div>
+              </div>
+          </template>
+        </card-panel>
+      </q-dialog>
   </q-page>
 </template>
 
@@ -129,6 +164,8 @@ import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
 import { getJalaliDate, gregorianToJalali, jalaliToGregorian } from 'src/helpers/dateOutputs';
 import SimpleTable from 'src/components/SimpleTable.vue';
+import SelectionInput from 'src/components/SelectionInput.vue';
+import { accountsList } from 'src/helpers/statics';
 const columns = [
   {
     name: 'id',
@@ -230,6 +267,12 @@ export default {
         installments:[],
         intervalDays:1
       }),
+      accountsInstance:ref({
+        loan_id:null,
+        account_ids:[],
+        remained_amount:0,
+        paid_amount:0
+      }),
       year,
       loanInfoDialog: ref(false),
       columns,
@@ -247,10 +290,33 @@ export default {
             label: 'تاریخ سررسید قسط'
           }
         ]
+      }),
+      appliedAccsDialog:ref(false),
+      accounts:ref([]),
+      accountsTable:ref({
+        rows:[],
+        columns:[
+          {
+            label: 'نام حساب'
+          },
+          {
+            label: 'شماره حساب'
+          },
+          {
+            label: 'موجودی حساب'
+          },
+          {
+            label: 'وضعیت حساب'
+          },
+          {
+            label: 'تاریخ عضویت حساب'
+          }
+        ]
       })
     }
   },
   data(){
+
     },
   methods:{
     onEditLoan(event){
@@ -260,7 +326,8 @@ export default {
       this.showInstallments = true
       this.loanInfoDialog = true
     },
-    onAfterLoaded(rows){
+    async onAfterLoaded(rows){
+      this.accounts = await accountsList()
     },
     calculation(){
       if (this.loanInstance.number_of_installments !=0 && this.loanInstance.due_date != null){
@@ -295,7 +362,6 @@ export default {
       this.loanInstance.due_date = jalaliToGregorian(this.loanInstance.due_date.replaceAll('/','-'))
       this.loanInstance.end_date = jalaliToGregorian(this.loanInstance.end_date.replaceAll('/','-'))
       this.loanInstance.issue_date = jalaliToGregorian(this.loanInstance.issue_date.replaceAll('/','-'))
-      // console.log(this.loanInstance)
       this.$refs.loanInfoDialogRef.submit({
         url: 'loan',
         value : this.loanInstance
@@ -342,12 +408,54 @@ export default {
     })
     this.loanInstance.end_date = installmentDates[this.loanInstance.number_of_installments-1].shamsi
     setTimeout(()=>{this.doPartition()},2000)
-}
+},
+    async showAccounts(loan){
+      this.accountsInstance.loan_id = loan.id
+      this.accountsTable.rows = []
+      await api.get(`loan/${loan.id}`).then(res=>{
+        res.data.loan.accounts.forEach(acc=>{
+          this.accountsInstance.account_ids.push({value:acc.id , label:acc.member_name + ' - '+acc.account_number,data:acc})
+          this.accountsTable.rows.push([
+          {label:acc.member_name },
+          {label:acc.account_number },
+          {label:acc.balance },
+          {label:acc.status },
+          {label:acc.created_at },
+          ])
+        })
+        this.appliedAccsDialog = true
+      }).catch(error=>{
+        alert(error.response.data.msg)
+      })
+    },
+    updateAccounts(account){
+      this.accountsInstance.account_ids = account
+      this.accountsTable.rows = []
+      this.accountsTable.rows.length = 0
+      setTimeout(() => {
+        this.accountsInstance.account_ids.forEach(acc=>{
+        this.accountsTable.rows.push([
+        {label:acc.data.member_name },
+          {label:acc.data.account_number },
+          {label:acc.data.balance },
+          {label:acc.data.status },
+          {label:acc.data.created_at },
+        ])
+      })
+      }, 1)
+    },
+    async applyLoanToAccounts(){
+      this.$refs.appliedAccsDialogRef.submit({
+        url: 'loan_acc_details',
+        value : this.accountsInstance
+      })
+    }
   },
   components:{
     CustomeTable,
     CardPanel,
-    SimpleTable
+    SimpleTable,
+    SelectionInput
   }
 }
 </script>
