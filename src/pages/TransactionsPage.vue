@@ -25,22 +25,20 @@
                 icon: 'payments'
               },
               {
-                label: 'پرداخت جریمه',
-                emit: 'on-penalty-payment',
-                icon: 'payments'
-              },
-              {
                 label: 'پرداخت کارمزد',
                 emit: 'on-fee-payment',
                 icon: 'payments'
-              },
+              }
+              // {
+              //   label: 'پرداخت جریمه',
+              //   emit: 'on-penalty-payment',
+              //   icon: 'payments'
+              // },
             ]"
-
-          @on-fee-payment="transactionInstance.type='پرداخت کارمزد';transactionInfoDialog=true;"
-          @on-penalty-payment="transactionInstance.type='پرداخت جریمه'"
-          @on-loan-payment="transactionInstance.type='پرداخت وام'"
-          @on-installment-payment="transactionInstance.type='پرداخت قسط'"
-          @on-monthlycharge-payment="transactionInstance.type='پرداخت ماهیانه';transactionInfoDialog=true;"
+          @on-fee-payment="resetValues();transactionInstance.type='پرداخت کارمزد';transactionInstance.description='پرداخت کارمزد وام ';transactionInfoDialog=true;"
+          @on-loan-payment="resetValues();transactionInstance.type='پرداخت وام';transactionInstance.description=`پرداخت `;transactionInfoDialog=true;"
+          @on-installment-payment="resetValues();transactionInstance.type='پرداخت قسط';transactionInstance.description=`پرداخت قسط وام `;transactionInfoDialog=true;"
+          @on-monthlycharge-payment="resetValues();transactionInstance.type='پرداخت ماهیانه';transactionInstance.description=`پرداخت ماهیانه ${monthName} `;transactionInfoDialog=true;"
           @on-edit-transaction="transactionInstance=$event"
           :columns="columns">
           <template v-slot:row-created_at="{ row }">
@@ -58,13 +56,16 @@
           </CustomeTable>
 
       <q-dialog v-model="transactionInfoDialog" :persistent="true">
-        <card-panel ref="transactionInfoDialogRef" title="افزودن تراکنش جدید" size="50%"
+        <card-panel ref="transactionInfoDialogRef" :title="transactionInstance.type" size="50%"
          @on-submit="addtransaction"
          :disableNotify="false"
         @on-success="this.$refs.table.getRows();transactionInfoDialog=false;">
 
           <template #body>
             <div class="row items-center">
+              <div class="col-12">
+                موجودی حساب : {{ accountInstance.balance }} ریال
+              </div>
                 <div class="col-12 col-sm-6">
                 <SelectionInput
                 :option-list="accounts"
@@ -77,17 +78,65 @@
                 label="انتخاب صندوق"
                 @on-update-model="transactionInstance.fund_account_id=$event.value"/>
                 </div>
-                <div class="col-12 col-sm-6" v-if="accountInstance.monthlyCharges">
-                  ماهیانه : {{ accountInstance.monthlyCharges.title }}
+                <div class="col-12" v-if="accountInstance.monthlyCharges != null">
+                  <div class="q-pa-md">
+                    ماهیانه : {{ accountInstance.monthlyCharges.title }}<br>
                   مبلغ : {{ accountInstance.monthlyCharges.amount }} ریال
+                  </div>
                 </div>
-                <div class="col-12 col-sm-6" v-if="accountInstance.transactioNTable.rows.length>0">
-                  تراکنش های اخیر
+                <div class="col-12 col-sm-6" v-if="accountInstance.loan != null">
+                  <div class="q-pa-md">
+                    وام : {{ accountInstance.loan.type }}<br>
+                  مبلغ وام: {{ accountInstance.loan.principal_amount }} ریال<br>
+                  تعداد اقساط : {{ accountInstance.loan.number_of_installments }}<br>
+                  مبلغ قسط : {{ transactionInstance.amount }} ریال
+
+                  </div>
+                </div>
+                <div class="col-12 col-sm-6" v-if="accountInstance.loan_details != null">
+                  <div class="q-pa-md">
+                  مانده وام: {{ accountInstance.loan_details.remained_amount }} ریال<br>
+                  پرداخت شده : {{ accountInstance.loan_details.paid_amount }} ریال
+                  </div>
+                </div>
+                <div v-if="no_loan_sentence">هیچ وامی به این حساب اعطا نشده!</div>
+                <div class="col-12" v-if="accountInstance.installments.length>1">
+                  اقساط وام :
+                  <li v-for="(i,index) in accountInstance.installments" :key="i">
+                    <q-icon v-if="accountInstance.transactioNTable.rows.length == index" name="file_download_done" color="positive"/>
+                    <span :class="`${accountInstance.transactioNTable.rows.length == index ? 'text-italic text-bold ':''}${accountInstance.transactioNTable.rows.length > index ? ' text-strike':''}`">
+                      {{ i.inst_number }} - تاریخ سررسید : {{ i.due_date }}
+                    </span>
+                  </li>
+                </div>
+                <div class="col-12 q-pa-sm row" v-if="accountInstance.unpaidLoan.length>0">
+                  <div class="col-6 q-pa-sm" :style="`border: 1px solid ${this.transactionInstance.loan_id == loan.id ?'green;':'rgba(0, 0, 0, 0.12);'}`" v-for="loan in accountInstance.unpaidLoan" :key="loan"
+                  @click="chooseUnpaidLoan(loan)" >
+                    وام : {{ loan.type }}<br>
+                  مبلغ وام: {{ loan.principal_amount }} ریال<br>
+                    تاریخ صدور : {{ loan.issue_date }}
+                  </div>
+                </div>
+                <div v-else class="col-12">وام پرداخت نشده ای وجود ندارد!</div>
+
+                <div class="col-12 q-pa-sm q-pb-md" v-if="accountInstance.transactioNTable.rows.length>0">
+                  {{ transactionInstance.type }} ها
                   <SimpleTable :init_rows="accountInstance.transactioNTable.rows" :init_columns="accountInstance.transactioNTable.columns"/>
                 </div>
-                <div class="col-12 col-sm-6" v-if="accountInstance.transactioNTable.rows.length>0">
+
+                <div v-if="accountInstance.fee != null">
+                  <div class="q-pa-md">
+                    وام : {{ accountInstance.quickLoan.type }}<br>
+                  مبلغ وام: {{ accountInstance.quickLoan.principal_amount }} ریال<br>
+                 کارمزد وام : {{ accountInstance.fee }} درصد -- {{ transactionInstance.amount }} ریال
+
+                  </div>
+                </div>
+                <div v-else class="col-12">تراکنشی وجود ندارد!</div>
+
+                <div class="col-12">
                   <q-input dense
-                type="textarea" disable
+                type="textarea"
                 class="style"
                 outlined
                 placeholder="توضیح"
@@ -108,7 +157,7 @@ import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
 import SelectionInput from 'src/components/SelectionInput.vue';
 import { accountsList, fundAccountList } from 'src/helpers/statics';
-import { getJalaliDate } from 'src/helpers/dateOutputs';
+import { getJalaliDate, persianDateTime } from 'src/helpers/dateOutputs';
 import SimpleTable from 'src/components/SimpleTable.vue';
 const columns = [
   {
@@ -178,8 +227,11 @@ export default {
 
   setup () {
     const {year , month , day} = getJalaliDate()
+    const monthName = persianDateTime().getMonthName()
     return {
       year,
+      monthName,
+      no_loan_sentence:ref(false),
       transactionInstance: ref({
         id: null,
         account_id:null,
@@ -190,13 +242,14 @@ export default {
         fund_account_id:null,
         monthly_charge_id:null,
         installment_id:null,
+        loan_id:null,
         monthlyCharge:{},
         installment:{},
         account:{},
         fundAccount:{}
       }),
       accountInstance:ref({
-        monthlyCharges:{},
+        monthlyCharges:null,
         transactioNTable:{
         rows:[],
         columns:[
@@ -214,7 +267,13 @@ export default {
           },
         ]
       },
-        loan:{},
+      quickLoan:null,
+        loan:null,
+        loan_details:null,
+        balance:0,
+        installments:[],
+        unpaidLoan:[],
+        fee:null
       }),
 
       transactionInfoDialog: ref(false),
@@ -227,48 +286,77 @@ export default {
 
     },
   methods:{
+    chooseUnpaidLoan(loan){
+      this.transactionInstance.loan_id = loan.id
+      this.transactionInstance.amount = loan.principal_amount
+      this.transactionInstance.description = 'پرداخت '+loan.type + ` به مبلغ ${loan.principal_amount}`
+    },
+    resetValues(){
+      this.no_loan_sentence = false
+      this.transactionInstance = {
+        id: null,
+        account_id:null,
+        amount:0,
+        description: '',
+        type: null,
+        delay_days:0,
+        fund_account_id:null,
+        monthly_charge_id:null,
+        installment_id:null,
+        loan_id:null,
+        monthlyCharge:{},
+        installment:{},
+        account:{},
+        fundAccount:{}
+      }
+      this.accountInstance = {
+        monthlyCharges:null,
+        transactioNTable:{
+        rows:[],
+        columns:[
+          {
+             label: 'نوع تراکنش'
+          },
+          {
+             label: 'مبلغ'
+          },
+          {
+             label: 'حساب صندوق'
+          },
+          {
+             label: 'تاریخ انجام تراکنش'
+          },
+        ]
+      },
+      loan_details:null,
+      installments:[],
+      unpaidLoan:[],
+      fee:null,
+      quickLoan:null,
+      loan:null,
+      balance:0
+      }
+    },
     async onAfterLoaded(rows){
       this.accounts = await accountsList()
       this.fundAccounts = await fundAccountList()
     },
     addtransaction(){
-      console.log(this.transactionInstance)
       this.$refs.transactionInfoDialogRef.submit({
         url: 'transaction',
         value : this.transactionInstance
-      })
-    },
-    updatetransaction(){
-      this.$refs.transactionInfoDialogRef.submit({
-        url: 'transaction',
-        value : this.transactionInstance
-      },'put')
-    },
-    async deletetransaction(transaction){
-      this.$emit('on-ok-dialog', {
-        message: `آیا از حذف تراکنش اطمینان دارید؟`,
-        icon: 'delete',
-        color: 'negative',
-        textColor: 'white',
-        onOk: async () => {
-          await api.post('transaction/delete',{id:transaction.id}).then(res=>{
-        this.$refs.table.getRows()
-      }).catch(error=>{
-        alert(error.response.data.message)
-      })
-        }
       })
     },
     async getExtraInfo(){
       switch(this.transactionInstance.type){
         case 'پرداخت کارمزد':
-          this.getLoan();
+          this.getFeeLoan();
           break;
-        case 'پرداخت جریمه':
-          this.getLoan();
-          break;
+        // case 'پرداخت جریمه':
+        //   this.getLoan();
+        //   break;
         case 'پرداخت وام':
-          this.getLoan();
+          this.getUnpaidLoan();
           break;
         case 'پرداخت قسط':
           this.getLoan();
@@ -279,13 +367,14 @@ export default {
       }
     },
     async getMonthlyCharges(){
-      alert(this.year)
       await api.get(`account/monthly_charge/${this.transactionInstance.account_id}`).then( async res=>{
+        this.accountInstance.balance = res.data.account.balance
         this.accountInstance.monthlyCharges = res.data.account.monthly_charges.find(item => item.year === this.year.toString())
         this.transactionInstance.amount = this.accountInstance.monthlyCharges.amount
         this.transactionInstance.monthly_charge_id = this.accountInstance.monthlyCharges.id
         await api.get(`transaction/acc/${this.transactionInstance.account_id}/chrg/${this.accountInstance.monthlyCharges.id}`).then(res=>{
-       res.data.transactions.forEach(t=>{
+          this.accountInstance.transactioNTable.rows = []
+          res.data.transactions.forEach(t=>{
         this.accountInstance.transactioNTable.rows.push([
           {
             label:t.type
@@ -297,18 +386,76 @@ export default {
             label:t.fund_account.name
           },
           {
-            label:t.type.created_at
+            label:t.created_at
           },
         ])
        })
       })
+      })
+    },
+    async getLoan(){
+      await api.get(`account/loan/${this.transactionInstance.account_id}`).then( async res=>{
+        this.accountInstance.balance = res.data.account.balance
+        this.accountInstance.loan = res.data.account.loans.find(item => item.year === this.year.toString() && item.status)
+        this.no_loan_sentence = this.accountInstance.loan == null
+        this.accountInstance.loan_details = res.data.account.loan_details.find(item => item.loan_id == this.accountInstance.loan.id)
+        this.transactionInstance.amount = this.no_loan_sentence ? 0 :Math.round(Number(this.accountInstance.loan.principal_amount) / Number(this.accountInstance.loan.number_of_installments))
+
+        await api.get(`loan/with_inst/${this.accountInstance.loan.id}`).then(async ress=>{
+          this.accountInstance.installments = ress.data.installments
+          await api.get(`transaction/acc/${this.transactionInstance.account_id}/loan_inst/${this.accountInstance.loan.id}`).then(res=>{
+          this.transactionInstance.description = `پرداخت قسط ${res.data.transactions.length+1} ${this.accountInstance.loan.type}`
+          this.transactionInstance.installment_id = this.accountInstance.installments[res.data.transactions.length].id
+
+          this.accountInstance.transactioNTable.rows = []
+          res.data.transactions.forEach(t=>{
+            this.accountInstance.transactioNTable.rows.push([
+              {
+                label:t.type
+              },
+              {
+                label:t.amount
+              },
+              {
+                label:t.fund_account.name
+              },
+              {
+                label:t.created_at
+              },
+            ])
+          })
+      })
+        })
+      }).catch(error=>{
+          alert(error.response.data.msg)
+        })
+    },
+    async getUnpaidLoan(){
+      this.accountInstance.unpaidLoan = []
+      await api.get(`account/loan/${this.transactionInstance.account_id}`).then(res=>{
+        this.accountInstance.balance = res.data.account.balance
+        const loan_ids = res.data.account.loan_details.filter(item => item.paid_by_fund === '0')
+        loan_ids.forEach(l=>{
+          this.accountInstance.unpaidLoan.push(res.data.account.loans.find(item => item.id == l.loan_id))
+        })
+      })
+    },
+    async getFeeLoan(){
+      await api.get(`account/loan/${this.transactionInstance.account_id}`).then(res=>{
+        this.accountInstance.balance = res.data.account.balance
+        const loan = res.data.account.loans.find(item => item.year === this.year.toString() && item.status)
+        this.accountInstance.quickLoan = loan
+        this.accountInstance.fee = loan.fee
+        this.transactionInstance.amount = Math.round((Number(loan.principal_amount) * Number(loan.fee)) / 100)
+        this.transactionInstance.description = `پرداخت کارمزد وام ${loan.type} - ${loan.fee} درصد `
       })
     }
   },
   components:{
     CustomeTable,
     CardPanel,
-    SelectionInput
+    SelectionInput,
+    SimpleTable
   }
 }
 </script>

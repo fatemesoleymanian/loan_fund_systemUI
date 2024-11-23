@@ -1,5 +1,7 @@
 <template>
   <q-page class="style">
+    //به هر حساب همزمان چند وام نمیشه داد
+    //چند نوع وام میخوای تعریف کنی؟
    ////، ازکدوم صندوق وام به شخص پرداخت شه کی بپرسم؟
    //سود و کارمزد رو هم باید حساب کنم.
    //کی بریزم به حساب
@@ -420,6 +422,7 @@ export default {
 },
     async showAccounts(loan){
       this.accountsInstance.loan_id = loan.id
+      this.loanInstance.principal_amount = loan.principal_amount
       this.accountsTable.rows = []
       await api.get(`loan/${loan.id}`).then(res=>{
         res.data.loan.accounts.forEach(acc=>{
@@ -454,6 +457,7 @@ export default {
       }, 1)
     },
     async applyLoanToAccounts(){
+      this.accountsInstance.remained_amount = this.loanInstance.principal_amount
       this.$refs.appliedAccsDialogRef.submit({
         url: 'loan_acc_details',
         value : this.accountsInstance

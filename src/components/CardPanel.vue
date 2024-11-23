@@ -85,7 +85,7 @@ await api[method](postObj.url, postObj.value).then(response => {
   // console.log(error)
   this.loading = false
   if (error.response != null ) {
-    alert(error.response.data.message)
+    alert(error.response.data.message || error.response.data.msg)
   }
 })
 },
