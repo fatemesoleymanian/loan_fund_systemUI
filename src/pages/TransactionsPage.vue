@@ -36,58 +36,63 @@
               },
             ]"
 
-          @on-fee-payment="transactionInstance.type='پرداخت کارمزد'"
+          @on-fee-payment="transactionInstance.type='پرداخت کارمزد';transactionInfoDialog=true;"
           @on-penalty-payment="transactionInstance.type='پرداخت جریمه'"
           @on-loan-payment="transactionInstance.type='پرداخت وام'"
           @on-installment-payment="transactionInstance.type='پرداخت قسط'"
-          @on-monthlycharge-payment="transactionInstance.type='پرداخت ماهیانه'"
+          @on-monthlycharge-payment="transactionInstance.type='پرداخت ماهیانه';transactionInfoDialog=true;"
           @on-edit-transaction="transactionInstance=$event"
           :columns="columns">
           <template v-slot:row-created_at="{ row }">
                 <div class="h5">{{row.created_at }}</div>
               </template>
+              <template v-slot:row-account_number="{ row }">
+                <div class="h5">{{row.account != null ? row.account.account_number : '' }}</div>
+              </template>
+              <template v-slot:row-member_name="{ row }">
+                <div class="h5">{{ row.account != null ? row.account.member_name : '' }}</div>
+              </template>
+              <template v-slot:row-fund_account="{ row }">
+                <div class="h5">{{row.fund_account != null ? row.fund_account.name : '' }}</div>
+              </template>
           </CustomeTable>
 
       <q-dialog v-model="transactionInfoDialog" :persistent="true">
-        <card-panel ref="transactionInfoDialogRef" :title="transactionInstance.id == null ? 'افزودن تراکنش جدید':'ویرایش اطلاعات تراکنش'" size="50%"
-         @on-submit="transactionInstance.id == null ? addtransaction() : updatetransaction()"
+        <card-panel ref="transactionInfoDialogRef" title="افزودن تراکنش جدید" size="50%"
+         @on-submit="addtransaction"
          :disableNotify="false"
         @on-success="this.$refs.table.getRows();transactionInfoDialog=false;">
 
           <template #body>
             <div class="row items-center">
                 <div class="col-12 col-sm-6">
-                  <q-input type="text" class="style" outlined dense hint="نام تراکنش"
-                  placeholder="نام تراکنش"
-                   v-model="transactionInstance.name"/>
+                <SelectionInput
+                :option-list="accounts"
+                label="انتخاب حساب"
+                @on-update-model="transactionInstance.account_id=$event.value;getExtraInfo()"/>
                 </div>
                 <div class="col-12 col-sm-6">
-                  <q-input dense
-                    type="text"
-                    class="style"
-                    outlined
-                    placeholder="شماره تراکنش"
-                    hint="شماره تراکنش"
-                    v-model="transactionInstance.transaction_number"/>
+                  <SelectionInput
+                :option-list="fundAccounts"
+                label="انتخاب صندوق"
+                @on-update-model="transactionInstance.fund_account_id=$event.value"/>
                 </div>
-                <div class="col-12 col-sm-6">
-                  موجودی : {{ transactionInstance.balance }}
-                  <q-input dense
-                    type="number"
-                    class="style"
-                    outlined
-                    placeholder="واریز "
-                    hint="واریز "
-                    v-model="balance_change"/>
-                    <q-btn label="واریز" color="primary"
-                     @click="transactionInstance.balance = parseInt(transactionInstance.balance) + parseInt(balance_change)"/>
+                <div class="col-12 col-sm-6" v-if="accountInstance.monthlyCharges">
+                  ماهیانه : {{ accountInstance.monthlyCharges.title }}
+                  مبلغ : {{ accountInstance.monthlyCharges.amount }} ریال
                 </div>
-                <div class="col-12 col-sm-6" style="margin-top: -20px;">
-                  <SelectionInput dense
-                    :option-list="transactionTypes"
-                    @on-update-model="transactionInstance.type=$event.label"
-                    :value="transactionInstance.type"
-                    label="نوع تراکنش" />
+                <div class="col-12 col-sm-6" v-if="accountInstance.transactioNTable.rows.length>0">
+                  تراکنش های اخیر
+                  <SimpleTable :init_rows="accountInstance.transactioNTable.rows" :init_columns="accountInstance.transactioNTable.columns"/>
+                </div>
+                <div class="col-12 col-sm-6" v-if="accountInstance.transactioNTable.rows.length>0">
+                  <q-input dense
+                type="textarea" disable
+                class="style"
+                outlined
+                placeholder="توضیح"
+                hint="توضیح"
+                v-model="transactionInstance.description"/>
                 </div>
               </div>
           </template>
@@ -98,12 +103,13 @@
 
 <script>
 import { ref } from 'vue';
-
 import CustomeTable from 'src/components/CustomeTable.vue';
 import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
-import { AccTypeList } from 'src/helpers/statics';
 import SelectionInput from 'src/components/SelectionInput.vue';
+import { accountsList, fundAccountList } from 'src/helpers/statics';
+import { getJalaliDate } from 'src/helpers/dateOutputs';
+import SimpleTable from 'src/components/SimpleTable.vue';
 const columns = [
   {
     name: 'account_number',
@@ -130,6 +136,12 @@ const columns = [
     disable_search: true,
   },
   {
+    name: 'fund_account',
+    label: 'حساب صندوق',
+    field: 'fund_account',
+    disable_search: true,
+  },
+  {
     name: 'created_at',
     label: 'تاریخ انجام تراکنش ',
     field: 'created_at',
@@ -145,7 +157,7 @@ const columns = [
         'q-btn': {
           menu: [
             {
-              title: 'مشاهده/ویرایش',
+              title: 'جزئیات',
               icon_name: 'info',
               icon_color: 'primary',
               emit: 'on-edit-transaction'
@@ -165,7 +177,9 @@ const columns = [
 export default {
 
   setup () {
+    const {year , month , day} = getJalaliDate()
     return {
+      year,
       transactionInstance: ref({
         id: null,
         account_id:null,
@@ -175,22 +189,50 @@ export default {
         delay_days:0,
         fund_account_id:null,
         monthly_charge_id:null,
-        installment_id:null
+        installment_id:null,
+        monthlyCharge:{},
+        installment:{},
+        account:{},
+        fundAccount:{}
       }),
+      accountInstance:ref({
+        monthlyCharges:{},
+        transactioNTable:{
+        rows:[],
+        columns:[
+          {
+             label: 'نوع تراکنش'
+          },
+          {
+             label: 'مبلغ'
+          },
+          {
+             label: 'حساب صندوق'
+          },
+          {
+             label: 'تاریخ انجام تراکنش'
+          },
+        ]
+      },
+        loan:{},
+      }),
+
       transactionInfoDialog: ref(false),
       columns,
-      balance_change:ref(0),
-      transactionTypes:ref([])
+      accounts:ref([]),
+      fundAccounts:ref([])
     }
   },
   data(){
 
     },
   methods:{
-    onAfterLoaded(rows){
-      this.transactionTypes = AccTypeList
+    async onAfterLoaded(rows){
+      this.accounts = await accountsList()
+      this.fundAccounts = await fundAccountList()
     },
     addtransaction(){
+      console.log(this.transactionInstance)
       this.$refs.transactionInfoDialogRef.submit({
         url: 'transaction',
         value : this.transactionInstance
@@ -215,6 +257,51 @@ export default {
         alert(error.response.data.message)
       })
         }
+      })
+    },
+    async getExtraInfo(){
+      switch(this.transactionInstance.type){
+        case 'پرداخت کارمزد':
+          this.getLoan();
+          break;
+        case 'پرداخت جریمه':
+          this.getLoan();
+          break;
+        case 'پرداخت وام':
+          this.getLoan();
+          break;
+        case 'پرداخت قسط':
+          this.getLoan();
+          break;
+        case 'پرداخت ماهیانه':
+          this.getMonthlyCharges();
+          break;
+      }
+    },
+    async getMonthlyCharges(){
+      alert(this.year)
+      await api.get(`account/monthly_charge/${this.transactionInstance.account_id}`).then( async res=>{
+        this.accountInstance.monthlyCharges = res.data.account.monthly_charges.find(item => item.year === this.year.toString())
+        this.transactionInstance.amount = this.accountInstance.monthlyCharges.amount
+        this.transactionInstance.monthly_charge_id = this.accountInstance.monthlyCharges.id
+        await api.get(`transaction/acc/${this.transactionInstance.account_id}/chrg/${this.accountInstance.monthlyCharges.id}`).then(res=>{
+       res.data.transactions.forEach(t=>{
+        this.accountInstance.transactioNTable.rows.push([
+          {
+            label:t.type
+          },
+          {
+            label:t.amount
+          },
+          {
+            label:t.fund_account.name
+          },
+          {
+            label:t.type.created_at
+          },
+        ])
+       })
+      })
       })
     }
   },
