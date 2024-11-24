@@ -8,6 +8,7 @@
     <q-table
     :grid="grid"
     v-if="loaded"
+    pagination-label=""
     :style="`border-radius: 15px; max-height: ${max_height}!important;`"
       :class="`style ${extra_class}+ ${stickyTop ? ' custom-sticky-header-table': ''}${fit_width ? ' q-table-max-width': ''}`"
       flat :bordered="bordered"
@@ -17,7 +18,6 @@
       color="primary"
       :loading="rowsValue == null"
       :visible-columns="visibleColumns"
-      :rows-per-page-options="[5,10,20,30,50,100,0]"
       v-model:pagination="pagination"
       @request="onRequest"
       virtual-scroll
@@ -195,7 +195,7 @@
                 unelevated
                   class="gt-sm sm-style download-table-btn q-py-sm"
                   color="primary"
-                  icon-right="fa-solid fa-file-arrow-down"
+                  icon-right="file_download"
                   label="دریافت اطلاعات"
 
                   no-caps
@@ -273,6 +273,9 @@
             </div>
             </div>
         </div>
+      </template>
+      <template v-slot:bottom>
+
       </template>
 
       <!-- <template v-slot:pagination>
@@ -365,7 +368,7 @@ export default {
     },
     sticky_top: {
       type: Boolean,
-      default: false
+      default: true
     },
     breakCol: {
       type: Boolean,

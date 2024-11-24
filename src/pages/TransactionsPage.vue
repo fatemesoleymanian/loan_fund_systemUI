@@ -1,4 +1,5 @@
 <template>
+  //سرچ و فیلتر
   <q-page class="style">
     <div class="row justify-center text-black h2">تراکنش ها</div>
       <CustomeTable
@@ -39,7 +40,7 @@
           @on-loan-payment="resetValues();transactionInstance.type='پرداخت وام';transactionInstance.description=`پرداخت `;transactionInfoDialog=true;"
           @on-installment-payment="resetValues();transactionInstance.type='پرداخت قسط';transactionInstance.description=`پرداخت قسط وام `;transactionInfoDialog=true;"
           @on-monthlycharge-payment="resetValues();transactionInstance.type='پرداخت ماهیانه';transactionInstance.description=`پرداخت ماهیانه ${monthName} `;transactionInfoDialog=true;"
-          @on-edit-transaction="transactionInstance=$event"
+          @on-view-transaction="transactionDetails=$event;viewTransactionDialog=true"
           :columns="columns">
           <template v-slot:row-created_at="{ row }">
                 <div class="h5">{{row.created_at }}</div>
@@ -147,6 +148,43 @@
           </template>
         </card-panel>
       </q-dialog>
+      <q-dialog v-model="viewTransactionDialog" :persistent="false">
+        <card-panel ref="viewTransactionDialoggRef" title="مشاهده تراکنش" size="50%"
+         :hide_actions="true">
+
+          <template #body>
+            <div class="row items-center">
+                <div class="col-12 col-sm-6 q-pa-sm" style="border: 1px solid rgba(0, 0, 0, 0.12);">
+                   حساب : {{ transactionDetails.account.member_name }} - {{ transactionDetails.account.account_number }}
+                </div>
+                <div class="col-12 col-sm-6  q-pa-sm" style="border: 1px solid rgba(0, 0, 0, 0.12);">
+                  مبلغ : {{ transactionDetails.amount }} ریال
+                </div>
+                <div class="col-12 col-sm-6 q-pa-sm" style="border: 1px solid rgba(0, 0, 0, 0.12);">
+                  نوع تراکنش : {{ transactionDetails.type }}
+                </div>
+                <div class="col-12 col-sm-6 q-pa-sm" v-if="transactionDetails.monthly_charge != null"
+                 style="border: 1px solid rgba(0, 0, 0, 0.12);">
+                   ماهیانه : {{ transactionDetails.monthly_charge.title }}
+                </div>
+                <div class="col-12 col-sm-6 q-pa-sm" v-if="transactionDetails.installment != null"
+                 style="border: 1px solid rgba(0, 0, 0, 0.12);">
+                   قسط : {{ transactionDetails.installment.inst_number }}
+                </div>
+                <div class="col-12 col-sm-6 q-pa-sm" style="border: 1px solid rgba(0, 0, 0, 0.12);">
+                  حساب صندوق : {{ transactionDetails.fund_account.name }}
+                </div>
+                <div class="col-12 col-sm-6 q-pa-sm" style="border: 1px solid rgba(0, 0, 0, 0.12);">
+                   در تاریخ  : {{ transactionDetails.created_at }}
+                </div>
+                <div class="col-12 col-sm-6 q-pa-sm" style="border: 1px solid rgba(0, 0, 0, 0.12);">
+                   توضیح  : {{ transactionDetails.description }}
+                </div>
+
+              </div>
+          </template>
+        </card-panel>
+      </q-dialog>
   </q-page>
 </template>
 
@@ -209,7 +247,7 @@ const columns = [
               title: 'جزئیات',
               icon_name: 'info',
               icon_color: 'primary',
-              emit: 'on-edit-transaction'
+              emit: 'on-view-transaction'
             }
           ],
           color: 'primary',
@@ -275,8 +313,9 @@ export default {
         unpaidLoan:[],
         fee:null
       }),
-
+      transactionDetails:ref({}),
       transactionInfoDialog: ref(false),
+      viewTransactionDialog:ref(false),
       columns,
       accounts:ref([]),
       fundAccounts:ref([])
