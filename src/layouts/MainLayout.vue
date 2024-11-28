@@ -57,7 +57,7 @@ const linksList = [
   {
     title: 'حساب ها',
     icon: 'school',
-    link: '#/'
+    link: '#/accounts'
   },
   {
     title: 'وام ها',
@@ -82,7 +82,7 @@ const linksList = [
   {
     title: 'مدیریت حساب ها',
     icon: 'rss_feed',
-    link: '#/fund_accounts'
+    link: '#/'
   }
 ]
 

@@ -3,6 +3,7 @@
     clickable
     tag="a"
     :href="props.link"
+    :active="itemIsActive"
   >
     <q-item-section
       v-if="props.icon"
@@ -19,6 +20,9 @@
 </template>
 
 <script setup>
+import { computed } from 'vue';
+import { useRouter } from 'vue-router';
+
 defineOptions({
   name: 'EssentialLink'
 })
@@ -43,5 +47,11 @@ const props = defineProps({
     type: String,
     default: ''
   }
+})
+const router = useRouter()
+
+// Method to check if the item is active
+const itemIsActive = computed(() => {
+  return props.link === router.currentRoute.value.href
 })
 </script>

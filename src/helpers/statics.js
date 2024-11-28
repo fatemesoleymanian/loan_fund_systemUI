@@ -90,7 +90,7 @@ export async function fundAccountList(){
 await api.get('fund_account').then(res=>{
 
   res.data.fund_accounts.forEach(acc=>{
-    listt.push({label:acc.name , value:acc.id})
+    listt.push({label:acc.name , value:acc.id, data:acc})
   })
 
  }).catch(error=>{
