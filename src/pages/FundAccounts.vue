@@ -29,7 +29,7 @@
           @update:model-value="tabUpdated">
           <q-tab name="info" icon="mail" label="حساب صندوق"/>
           <q-tab name="assets" icon="alarm" label="اثاثیه" />
-          <q-tab name="charity" icon="movie" label="خیریه" />
+          <q-tab name="charity" icon="movie" label="هزینه" />
           <q-tab name="todayReport" icon="movie" label="دفتر روزانه" />
         </q-tabs>
       </template>
@@ -134,7 +134,7 @@
                   </template>
           </CustomeTable>
           <div class="row q-pa-sm justify-center">
-            <div class="col-6">مجموع هزینه خیریه : {{ costs }} ریال</div>
+            <div class="col-6">مجموع هزینه هزینه : {{ costs }} ریال</div>
             <div class="col-6">مجموع هزینه ها  : {{ current_acc.data.expenses }} ریال</div>
           </div>
           </q-tab-panel>
