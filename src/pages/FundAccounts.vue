@@ -1,7 +1,8 @@
 <template>
   <q-page class="style">
+    //قسمت برداشت از موجودی و انتخاب اعضا در اثاثیه موند1)
+    //2) دفتر روزانه موند
     <div class="row justify-center text-black h2">مدیریت حساب های صندوق</div>
-
     <div class="row">
       <div class="col-8">
       <q-btn label="ایجاد حساب" v-if="current_acc == null" color="primary" outline @click="accountInstance={  id: null,
@@ -18,9 +19,7 @@
     <div v-if="current_acc != null">
     <q-splitter
       v-model="splitterModel"
-      style="height: fit-content;"
-    >
-
+      style="height: fit-content;">
       <template v-slot:before>
         <q-tabs
           v-model="tab"
@@ -34,7 +33,6 @@
           <q-tab name="todayReport" icon="movie" label="دفتر روزانه" />
         </q-tabs>
       </template>
-
       <template v-slot:after>
         <q-tab-panels
           v-model="tab"
@@ -42,8 +40,7 @@
           swipeable
           vertical
           transition-prev="jump-up"
-          transition-next="jump-up"
-        >
+          transition-next="jump-up">
           <q-tab-panel name="info">
             <div class="text-h6 q-mb-md">اطلاعات کلی این حساب</div>
             <div class="row">
@@ -70,25 +67,29 @@
             </div>
             </div>
           </q-tab-panel>
-
           <q-tab-panel name="assets">
             <CustomeTable
             ref="assestTable"
             :table="{
               url: 'asset',
-              arrayKey: 'assets'
+              arrayKey: 'assets',
+              summation: 'costs'
               }"
                 :add_button="
                   {
                       label: 'افزودن اثاثیه',
                       icon: 'add'
                   }"
-
+              @summation-after-loaded="costs = $event"
               @on-add-button="assetInstance={
-                id:null,
-                title:'',
-                cost:0,
-                description:''
+               id:null,
+              title:'',
+              cost:0,
+              isExpense:true,
+              fund_acc_id:null,
+              description:'',
+              money_source:'از کارمزد',
+              accounts:null
               };assestInfoDialog=true;"
               @on-delete-asset="deleteAsses"
               @on-edit-asset="assetInstance=$event;assestInfoDialog=true;"
@@ -97,16 +98,45 @@
                     <div class="h5">{{row.created_at }}</div>
                   </template>
           </CustomeTable>
-
+          <div class="row q-pa-sm justify-center">
+            <div class="col-6">مجموع هزینه اثاثیه : {{ costs }} ریال</div>
+            <div class="col-6">مجموع هزینه ها  : {{ current_acc.data.expenses }} ریال</div>
+          </div>
           </q-tab-panel>
-
           <q-tab-panel name="charity">
-            <q-btn label="برداشت" color="primary" outline/>
-
-            <div class="text-h4 q-mb-md">Movies</div>
-            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.</p>
-            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.</p>
-            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.</p>
+                <CustomeTable
+            ref="charityTable"
+            :table="{
+              url: 'charity',
+              arrayKey: 'charities',
+              summation: 'amounts'
+              }"
+                :add_button="
+                  {
+                      label: 'افزودن ',
+                      icon: 'add'
+                  }"
+              @summation-after-loaded="costs = $event"
+              @on-add-button="charityInstance={
+               id:null,
+              amount:0,
+              isExpense:true,
+              fund_acc_id:null,
+              description:'',
+              money_source:'از کارمزد',
+              accounts:null
+              };charityInfoDialog=true;"
+              @on-delete-charity="deleteCharity"
+              @on-edit-charity="charityInstance=$event;charityInfoDialog=true;"
+              :columns="charityColumns">
+              <template v-slot:row-created_at="{ row }">
+                    <div class="h5">{{row.created_at }}</div>
+                  </template>
+          </CustomeTable>
+          <div class="row q-pa-sm justify-center">
+            <div class="col-6">مجموع هزینه خیریه : {{ costs }} ریال</div>
+            <div class="col-6">مجموع هزینه ها  : {{ current_acc.data.expenses }} ریال</div>
+          </div>
           </q-tab-panel>
           <q-tab-panel name="todayReport">
             <div class="text-h4 q-mb-md">todayReport</div>
@@ -116,11 +146,8 @@
           </q-tab-panel>
         </q-tab-panels>
       </template>
-
     </q-splitter>
   </div>
-
-
       <q-dialog v-model="fundAccountInfoDialog" :persistent="true">
         <card-panel ref="fundAccountInfoDialogRef" title=" حساب صندوق جدید" size="50%"
          @on-submit="addfundAccount()"
@@ -149,7 +176,7 @@
         <card-panel ref="assestInfoDialogRef" :title="assetInstance.id == null ? 'افزودن اثاثیه جدید':'ویرایش اثاثیه'" size="50%"
          @on-submit="assetInstance.id == null ? addAsset() : updateAsset()"
          :disableNotify="false"
-        @on-success="this.$refs.assestTable.getRows();assestInfoDialog=false">
+        @on-success="reloadPage">
 
           <template #body>
             <div class="row items-center">
@@ -172,6 +199,67 @@
                   placeholder="توضیحات اضافی"
                    v-model="assetInstance.description"/>
                 </div>
+                <div class="col-12 ">
+                <q-option-group
+                  v-model="assetInstance.money_source"
+                  :options="money_sources"
+                  color="primary"
+                  inline
+                  dense
+                />
+                <q-checkbox v-if="assetInstance.money_source === 'از هیچکدام'" left-label v-model="assetInstance.isExpense"
+                 label="بعنوان هزینه محاسبه شود." />
+              </div>
+              <div class="col-12 col-sm-6" v-if="assetInstance.money_source === 'از موجودی'">
+                <SelectionInput dense
+                    :option-list="member_accounts"
+                    @on-update-model="makeAccountsField"
+                    label="انتخاب حساب ها" />
+              </div>
+              </div>
+          </template>
+        </card-panel>
+      </q-dialog>
+      <q-dialog v-model="charityInfoDialog" :persistent="true">
+        <card-panel ref="charityInfoDialogRef" :title="charityInstance.id == null ? 'افزودن  ':'ویرایش '" size="50%"
+         @on-submit="charityInstance.id == null ? addCharity() : updateCharity()"
+         :disableNotify="false"
+        @on-success="reloadPage">
+
+          <template #body>
+            <div class="row items-center">
+
+                <div class="col-12 col-sm-6">
+                  <q-input dense
+                type="text"
+                class="style"
+                outlined
+                placeholder="هزینه"
+                hint="هزینه"
+                v-model="charityInstance.amount"/>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <q-input type="text" class="style" outlined dense hint="توضیحات اضافی"
+                  placeholder="توضیحات اضافی"
+                   v-model="charityInstance.description"/>
+                </div>
+                <div class="col-12 ">
+                <q-option-group
+                  v-model="charityInstance.money_source"
+                  :options="money_sources"
+                  color="primary"
+                  inline
+                  dense
+                />
+                <q-checkbox v-if="charityInstance.money_source === 'از هیچکدام'" left-label v-model="charityInstance.isExpense"
+                 label="بعنوان هزینه محاسبه شود." />
+              </div>
+              <div class="col-12 col-sm-6" v-if="charityInstance.money_source === 'از موجودی'">
+                <SelectionInput dense
+                    :option-list="member_accounts"
+                    @on-update-model="makeAccountsField"
+                    label="انتخاب حساب ها" />
+              </div>
               </div>
           </template>
         </card-panel>
@@ -185,7 +273,8 @@ import { ref } from 'vue';
 import CustomeTable from 'src/components/CustomeTable.vue';
 import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
-import { fundAccountList, fundAccTypeList } from 'src/helpers/statics';
+import { accountsList, fundAccountList, fundAccTypeList } from 'src/helpers/statics';
+import SelectionInput from 'src/components/SelectionInput.vue';
 const assestColumns = [
 {
     name: 'id',
@@ -197,6 +286,12 @@ const assestColumns = [
     name: 'title',
     label: 'نام',
     field: 'title',
+    disable_search: true,
+  },
+  {
+    name: 'money_source',
+    label: 'برداشت هزینه',
+    field: 'money_source',
     disable_search: true,
   },
   {
@@ -217,44 +312,122 @@ const assestColumns = [
     field: 'created_at',
     disable_search: true,
   },
-  {
-    name: 'actions',
-    field: 'actions',
-    disable_search: true,
-    label: 'عملیات',
-    tools: [
-      {
-        'q-btn': {
-          menu: [
-            {
-              title: 'مشاهده/ویرایش',
-              icon_name: 'info',
-              icon_color: 'primary',
-              emit: 'on-edit-asset'
-            },
-            {
-              title: 'حذف',
-              icon_name: 'delete',
-              icon_color: 'primary',
-              emit: 'on-delete-asset'
-            },
-          ],
-          color: 'primary',
-          size: 'xs',
-          icon: 'more_horiz',
-          round: true,
-          outline: true
-        }
+  // {
+  //   name: 'actions',
+  //   field: 'actions',
+  //   disable_search: true,
+  //   label: 'عملیات',
+  //   tools: [
+  //     {
+  //       'q-btn': {
+  //         menu: [
+  //           // {
+  //           //   title: 'مشاهده/ویرایش',
+  //           //   icon_name: 'info',
+  //           //   icon_color: 'primary',
+  //           //   emit: 'on-edit-asset'
+  //           // },
+  //           // {
+  //           //   title: 'حذف',
+  //           //   icon_name: 'delete',
+  //           //   icon_color: 'primary',
+  //           //   emit: 'on-delete-asset'
+  //           // },
+  //         ],
+  //         color: 'primary',
+  //         size: 'xs',
+  //         icon: 'more_horiz',
+  //         round: true,
+  //         outline: true
+  //       }
 
-      }
-    ]
-  }
+  //     }
+  //   ]
+  // }
+]
+const charityColumns = [
+{
+    name: 'id',
+    label: 'شناسه',
+    field: 'id',
+    disable_search: true,
+  },
+  {
+    name: 'money_source',
+    label: 'برداشت هزینه',
+    field: 'money_source',
+    disable_search: true,
+  },
+  {
+    name: 'amount',
+    label: 'هزینه',
+    field: 'amount',
+    disable_search: true,
+  },
+  {
+    name: 'description',
+    label: 'توضیح',
+    field: 'description',
+    disable_search: true,
+  },
+  {
+    name: 'created_at',
+    label: 'تاریخ ',
+    field: 'created_at',
+    disable_search: true,
+  },
+  // {
+  //   name: 'actions',
+  //   field: 'actions',
+  //   disable_search: true,
+  //   label: 'عملیات',
+  //   tools: [
+  //     {
+  //       'q-btn': {
+  //         menu: [
+  //           // {
+  //           //   title: 'مشاهده/ویرایش',
+  //           //   icon_name: 'info',
+  //           //   icon_color: 'primary',
+  //           //   emit: 'on-edit-asset'
+  //           // },
+  //           // {
+  //           //   title: 'حذف',
+  //           //   icon_name: 'delete',
+  //           //   icon_color: 'primary',
+  //           //   emit: 'on-delete-asset'
+  //           // },
+  //         ],
+  //         color: 'primary',
+  //         size: 'xs',
+  //         icon: 'more_horiz',
+  //         round: true,
+  //         outline: true
+  //       }
+
+  //     }
+  //   ]
+  // }
 ]
 export default {
 
   setup () {
     return {
       tab: ref('info'),
+      money_sources:[
+        {
+          label: 'برداشت از کارمزد',
+          value: 'از کارمزد'
+        },
+        {
+          label: 'برداشت از موجودی',
+          value: 'از موجودی'
+        },
+        {
+          label: 'برداشت از هیچکدام',
+          value: 'از هیچکدام'
+        },
+      ],
       splitterModel: ref(20),
       accountInstance: ref({
         id: null,
@@ -268,14 +441,31 @@ export default {
         id:null,
         title:'',
         cost:0,
-        description:''
+        isExpense:true,
+        fund_acc_id:null,
+        description:'',
+        money_source:'از کارمزد',
+        accounts:null
       }),
+      charityInstance:ref({
+         id:null,
+        amount:0,
+        isExpense:true,
+        fund_acc_id:null,
+        description:'',
+        money_source:'از کارمزد',
+        accounts:null
+      }),
+      costs:ref(0),
       fundAccountInfoDialog: ref(false),
       assestInfoDialog: ref(false),
+      charityInfoDialog: ref(false),
       assestColumns,
+      charityColumns,
       balance_change:ref(0),
       fundAccountsList:ref([]),
-      current_acc:ref(null)
+      current_acc:ref(null),
+      member_accounts:ref([])
     }
   },
   data(){
@@ -294,6 +484,7 @@ export default {
         fees: 0,
         expenses:0,
         name: 'صندوق قرض الحسنه (اصلی)'}
+        this.member_accounts = await accountsList()
         this.fundAccountInfoDialog = true
       }else this.current_acc = this.fundAccountsList[0]
     },
@@ -349,6 +540,7 @@ export default {
       })
     },
     addAsset(){
+      this.assetInstance.fund_acc_id = this.current_acc.value
       this.$refs.assestInfoDialogRef.submit({
         url: 'asset',
         value : this.assetInstance
@@ -359,7 +551,16 @@ export default {
         url: 'asset',
         value : this.assetInstance
       },'put')
-
+    },
+    makeAccountsField(val){
+      console.log(val)
+    },
+        addCharity(){
+      this.charityInstance.fund_acc_id = this.current_acc.value
+      this.$refs.charityInfoDialogRef.submit({
+        url: 'charity',
+        value : this.charityInstance
+      })
     },
   },
   components:{

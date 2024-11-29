@@ -550,9 +550,11 @@ export default {
       api.get(query).then(response => {
         const rowsValue = this.table.arrayKey != null ? response.data[this.table.arrayKey] : response.data
         const totalRecords = this.table.totalKey != null ? response.data[this.table.totalKey] : response.data.length
+        const extraSummation = this.table.summation != null ? response.data[this.table.summation] : null
         this.rowsValue = rowsValue
         this.pagination.rowsNumber = totalRecords
         this.$emit('after-loaded', this.rowsValue)
+        this.$emit('summation-after-loaded', extraSummation)
       })
       // console.log(this.$q.lang.table.rows)
     },
