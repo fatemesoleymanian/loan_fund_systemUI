@@ -41,6 +41,7 @@
                 <div class="col-12 col-sm-6">
                   <q-input dense
                     type="number"
+                    min="0"
                     class="style"
                     outlined
                     placeholder="مبلغ"
@@ -50,6 +51,7 @@
                 <div class="col-12 col-sm-6">
                   <q-input dense
                     type="number"
+                    min="0"
                     class="style"
                     outlined
                     placeholder="سال"

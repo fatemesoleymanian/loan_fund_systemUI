@@ -1,6 +1,6 @@
 <template>
   <q-page class="style">
-    //2) دفتر روزانه موند
+    //آیا هزینه ها روتو برداشت ها بیارم؟
     <div class="row justify-center text-black h2">مدیریت حساب های صندوق</div>
     <div class="row">
       <div class="col-8">
@@ -9,7 +9,7 @@
         total_balance: 0,
         fees: 0,
         expenses:0,
-        name: 'صندوق قرض الحسنه (اصلی)'};fundAccountInfoDialog = true"/>
+        name: 'صندوق قرض الحسنه'};fundAccountInfoDialog = true"/>
       </div>
       <div class="col-4">
         <q-select outlined dense v-model="current_acc" :value="fundAccountsList[0]" :options="fundAccountsList" label="صندوق" />
@@ -88,8 +88,7 @@
               fund_acc_id:null,
               description:'',
               money_source:'از کارمزد',
-              accounts:null
-              };tmpAccounts=[];assestInfoDialog=true;"
+              };assestInfoDialog=true;"
               @on-delete-asset="deleteAsses"
               @on-edit-asset="assetInstance=$event;assestInfoDialog=true;"
               :columns="assestColumns">
@@ -123,8 +122,7 @@
               fund_acc_id:null,
               description:'',
               money_source:'از کارمزد',
-              accounts:null
-              };tmpAccounts=[];charityInfoDialog=true;"
+              };charityInfoDialog=true;"
               @on-delete-charity="deleteCharity"
               @on-edit-charity="charityInstance=$event;charityInfoDialog=true;"
               :columns="charityColumns">
@@ -138,10 +136,54 @@
           </div>
           </q-tab-panel>
           <q-tab-panel name="todayReport">
-            <div class="text-h4 q-mb-md">todayReport</div>
-            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.</p>
-            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.</p>
-            <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis praesentium cumque magnam odio iure quidem, quod illum numquam possimus obcaecati commodi minima assumenda consectetur culpa fuga nulla ullam. In, libero.</p>
+            <q-tabs v-model="todayTab" dense class="text-grey"  active-color="primary" indicator-color="primary" align="justify"
+          narrow-indicator>
+        <q-tab name="deposits" icon="alarm" label="واریزی ها" />
+        <q-tab name="withdraws" icon="movie" label="برداشت ها" />
+             </q-tabs>
+             <q-separator />
+
+        <q-tab-panels v-model="todayTab" animated>
+          <q-tab-panel name="deposits">
+            <CustomeTable
+            ref="depositsTable"
+            :table="{
+              url: 'deposit',
+              arrayKey: 'deposits',
+              summation: 'amounts'
+              }"
+
+              @summation-after-loaded="depositsSummation = $event"
+              :columns="dep_withd_Columns">
+              <template v-slot:row-created_at="{ row }">
+                    <div class="h5">{{row.created_at }}</div>
+                  </template>
+          </CustomeTable>
+          <div class="row q-pa-sm justify-center">
+            <div class="col-12">مجموع واریزی ها : {{ depositsSummation }} ریال</div>
+          </div>
+          </q-tab-panel>
+          <q-tab-panel name="withdraws">
+            <CustomeTable
+            ref="withdrawsTable"
+            :table="{
+              url: 'withdraw',
+              arrayKey: 'withdraws',
+              summation: 'amounts'
+              }"
+
+              @summation-after-loaded="withdrawsSummation = $event"
+              :columns="dep_withd_Columns">
+              <template v-slot:row-created_at="{ row }">
+                    <div class="h5">{{row.created_at }}</div>
+                  </template>
+          </CustomeTable>
+          <div class="row q-pa-sm justify-center">
+            <div class="col-12">مجموع برداشت ها : {{ withdrawsSummation }} ریال</div>
+          </div>
+          </q-tab-panel>
+          </q-tab-panels>
+
           </q-tab-panel>
         </q-tab-panels>
       </template>
@@ -186,7 +228,8 @@
                 </div>
                 <div class="col-12 col-sm-6">
                   <q-input dense
-                type="text"
+                type="number"
+                min="0"
                 class="style"
                 outlined
                 placeholder="هزینه"
@@ -209,13 +252,13 @@
                 <q-checkbox v-if="assetInstance.money_source === 'از هیچکدام'" left-label v-model="assetInstance.isExpense"
                  label="بعنوان هزینه محاسبه شود." />
               </div>
-              <div class="col-12 col-sm-6" v-if="assetInstance.money_source === 'از موجودی'">
+              <!-- <div class="col-12 col-sm-6" v-if="assetInstance.money_source === 'از موجودی'">
                 <SelectionInput dense
                     :multible="true"
                     :option-list="member_accounts"
                     @on-update-model="makeAccountsField"
                     label="انتخاب حساب ها" />
-              </div>
+              </div> -->
               </div>
           </template>
         </card-panel>
@@ -231,7 +274,8 @@
 
                 <div class="col-12 col-sm-6">
                   <q-input dense
-                type="text"
+                type="number"
+                min="0"
                 class="style"
                 outlined
                 placeholder="هزینه"
@@ -254,13 +298,13 @@
                 <q-checkbox v-if="charityInstance.money_source === 'از هیچکدام'" left-label v-model="charityInstance.isExpense"
                  label="بعنوان هزینه محاسبه شود." />
               </div>
-              <div class="col-12 col-sm-6" v-if="charityInstance.money_source === 'از موجودی'">
+              <!-- <div class="col-12 col-sm-6" v-if="charityInstance.money_source === 'از موجودی'">
                 <SelectionInput dense
                  :multible="true"
                     :option-list="member_accounts"
                     @on-update-model="makeAccountsField"
                     label="انتخاب حساب ها" />
-              </div>
+              </div> -->
               </div>
           </template>
         </card-panel>
@@ -410,11 +454,44 @@ const charityColumns = [
   //   ]
   // }
 ]
+const dep_withd_Columns = [
+{
+    name: 'id',
+    label: 'شناسه',
+    field: 'id',
+    disable_search: true,
+  },
+  {
+    name: 'account_id',
+    label: 'شماره حساب',
+    field: 'account_id',
+    disable_search: true,
+  },
+  {
+    name: 'amount',
+    label: 'مبلغ',
+    field: 'amount',
+    disable_search: true,
+  },
+  {
+    name: 'description',
+    label: 'توضیح',
+    field: 'description',
+    disable_search: true,
+  },
+  {
+    name: 'created_at',
+    label: 'تاریخ ',
+    field: 'created_at',
+    disable_search: true,
+  }
+]
 export default {
 
   setup () {
     return {
       tab: ref('info'),
+      todayTab:ref('deposits'),
       money_sources:[
         {
           label: 'برداشت از کارمزد',
@@ -436,7 +513,7 @@ export default {
         total_balance: 0,
         fees: 0,
         expenses:0,
-        name: 'صندوق قرض الحسنه (اصلی)',
+        name: 'صندوق قرض الحسنه ',
       }),
       assetInstance:ref({
         id:null,
@@ -446,7 +523,6 @@ export default {
         fund_acc_id:null,
         description:'',
         money_source:'از کارمزد',
-        accounts:null
       }),
       charityInstance:ref({
          id:null,
@@ -455,14 +531,16 @@ export default {
         fund_acc_id:null,
         description:'',
         money_source:'از کارمزد',
-        accounts:null
       }),
       costs:ref(0),
+      depositsSummation:ref(0),
+      withdrawsSummation:ref(0),
       fundAccountInfoDialog: ref(false),
       assestInfoDialog: ref(false),
       charityInfoDialog: ref(false),
       assestColumns,
       charityColumns,
+      dep_withd_Columns,
       balance_change:ref(0),
       fundAccountsList:ref([]),
       current_acc:ref(null),
@@ -485,10 +563,10 @@ export default {
         total_balance: 0,
         fees: 0,
         expenses:0,
-        name: 'صندوق قرض الحسنه (اصلی)'}
+        name: 'صندوق قرض الحسنه '}
         this.fundAccountInfoDialog = true
       }else {
-        this.member_accounts = await accountsList()
+        // this.member_accounts = await accountsList()
         this.current_acc = this.fundAccountsList[0]
       }
     },
@@ -544,7 +622,7 @@ export default {
       })
     },
     addAsset(){
-       this.assetInstance.accounts = this.splitAccountsForCharityAndAsset()
+      //  this.assetInstance.accounts = this.splitAccountsForCharityAndAsset()
       this.assetInstance.fund_acc_id = this.current_acc.value
       this.$refs.assestInfoDialogRef.submit({
         url: 'asset',
@@ -561,7 +639,7 @@ export default {
       this.tmpAccounts = val
     },
     addCharity(){
-      this.charityInstance.accounts = this.splitAccountsForCharityAndAsset()
+      // this.charityInstance.accounts = this.splitAccountsForCharityAndAsset()
       this.charityInstance.fund_acc_id = this.current_acc.value
       this.$refs.charityInfoDialogRef.submit({
         url: 'charity',
@@ -582,8 +660,6 @@ export default {
   },
   components:{
     CustomeTable,
-    CardPanel,
-    SelectionInput
-  }
+    CardPanel  }
 }
 </script>

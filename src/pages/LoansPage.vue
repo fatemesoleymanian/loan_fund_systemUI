@@ -56,7 +56,7 @@
           <template #body>
             <div class="row items-center">
                 <div class="col-12 col-sm-6">
-                  <q-input type="number" class="style" outlined dense
+                  <q-input type="number" min="0" class="style" outlined dense
                   hint="مبلغ وام"
                   placeholder="مبلغ وام"
                    v-model="loanInstance.principal_amount"/>
@@ -68,20 +68,20 @@
                    v-model="loanInstance.type"/>
                 </div>
                 <div class="col-12 col-sm-6">
-                  <q-input type="number" class="style" outlined dense
+                  <q-input type="number" min="0" class="style" outlined dense
                   hint="تعداد اقساط"
                   placeholder="تعداد اقساط"
                    v-model="loanInstance.number_of_installments"/>
                 </div>
                 <div class="col-12 col-sm-6">
-                  <q-input type="number" class="style" outlined dense
+                  <q-input type="number" min="0" class="style" outlined dense
                   hint="کارمزد" style="display: inline-block;max-width: 150px;"
                   placeholder="کارمزد"
                    v-model="loanInstance.fee"/>
                    <span class="q-px-sm">{{ Math.round((Number(loanInstance.principal_amount) * 4) / 100) }} ریال </span>
                 </div>
                 <div class="col-12 col-sm-6" >
-                  <q-input type="number" class="style" outlined dense
+                  <q-input type="number" min="0" class="style" outlined dense
                   hint="فاصله اقساط"
                   placeholder="فاصله اقساط"
                    v-model="loanInstance.intervalDays"
@@ -112,7 +112,7 @@
                    v-model="loanInstance.end_date"/>
                 </div>
                 <div class="col-12 col-sm-6">
-                  <q-input type="number" class="style" outlined dense
+                  <q-input type="number" min="0" class="style" outlined dense
                   hint="سال"
                   placeholder="سال"
                    v-model="loanInstance.year"/>

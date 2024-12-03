@@ -1,7 +1,6 @@
 <template>
   <q-page class="style">
     //ماهیانه حساب موند
-    حساب های بسته چی میشن؟ جایی نمایش داده میشن و جایی حساب میشن؟//
     <div class="row justify-center text-black h2">حساب ها</div>
 
       <CustomeTable
@@ -35,7 +34,8 @@
           @on-edit-account="fillInstance($event);accountInfoDialog = true"
           :columns="columns"
           @on-deposit="transactionInstance.account_id=$event.id;transactionInstance.balance=$event.balance;transactionInstance.description='واریز حساب';createDepositDialog=true"
-          @on-closure="transactionInstance.account_id=$event.id;transactionInstance.balance=$event.balance;transactionInstance.description='بستن حساب';transactionInstance.amount=$event.balance;closureDialog=true">
+          @on-closure="transactionInstance.account_id=$event.id;transactionInstance.balance=$event.balance;transactionInstance.description='بستن حساب';transactionInstance.amount=$event.balance;closureDialog=true"
+          @on-withdraw="transactionInstance.account_id=$event.id;transactionInstance.balance=$event.balance;transactionInstance.description='برداشت از حساب';createWithdrawDialog=true">
           <template v-slot:row-select="{ row }">
                 <q-checkbox class="style" v-model="row.select" @click="saveDeselected(row)"/>
               </template>
@@ -44,6 +44,9 @@
               </template>
               <template v-slot:row-created_at="{ row }">
                 <div class="h5">{{row.created_at }}</div>
+              </template>
+              <template v-slot:row-is_open="{ row }">
+                <div class="h4">{{row.is_open === '1' ? 'باز':' بسته شده' }}</div>
               </template>
               <template v-slot:row-monthly_charges="{ row }">
                 <div v-if="row.monthly_charges">
@@ -120,7 +123,8 @@
                 </div>
                 <div class="col-12 col-sm-6">
                   <q-input dense  v-if="accountInstance.id == null"
-                    type="text"
+                    type="number"
+                    min="0"
                     class="style"
                     outlined
                     placeholder="موجودی"
@@ -181,6 +185,31 @@
          @on-submit="createDeposit"
          :disableNotify="false"
         @on-success="this.$refs.table.getRows();createDepositDialog=false;">
+          <template #body>
+            <div class="row items-center">
+              <div class="col-12 text-center font-bold">
+                موجودی : {{ transactionInstance.balance }}
+              </div>
+                <div class="col-12 ">
+                  <q-input type="number" min="0" class="style" outlined dense hint="مبلغ"
+                  placeholder="مبلغ"
+                   v-model="transactionInstance.amount"/>
+                </div>
+                <div class="col-12 ">
+                  <q-input type="textarea" class="style" outlined dense hint="توضیح"
+                  placeholder="توضیح"
+                   v-model="transactionInstance.description"/>
+                </div>
+            </div>
+          </template>
+        </card-panel>
+      </q-dialog>
+      <q-dialog v-model="createWithdrawDialog" :persistent="true">
+        <card-panel ref="createWithdrawDialogRef"
+        title="برداشت" size="50%"
+         @on-submit="createWithdraw"
+         :disableNotify="false"
+        @on-success="this.$refs.table.getRows();createWithdrawDialog=false;">
           <template #body>
             <div class="row items-center">
               <div class="col-12 text-center font-bold">
@@ -275,6 +304,12 @@ const columns = [
     disable_search: true,
   },
   {
+    name: 'is_open',
+    label: 'حساب باز / بسته',
+    field: 'is_open',
+    disable_search: true,
+  },
+  {
     name: 'monthly_charges',
     label: 'نوع ماهیانه',
     field: 'monthly_charges',
@@ -313,12 +348,12 @@ const columns = [
               icon_color: 'negative',
               emit: 'on-closure'
             },
-            // {
-            //   title: 'حذف',
-            //   icon_name: 'delete',
-            //   icon_color: 'primary',
-            //   emit: 'on-delete-account'
-            // },
+            {
+              title: 'برداشت',
+              icon_name: 'delete',
+              icon_color: 'primary',
+              emit: 'on-withdraw'
+            },
           ],
           color: 'primary',
           size: 'xs',
@@ -368,6 +403,7 @@ export default {
       }),
       accountInfoDialog: ref(false),
       createDepositDialog: ref(false),
+      createWithdrawDialog: ref(false),
       closureDialog: ref(false),
       columns,
       stock_units: ref(0),
@@ -426,6 +462,10 @@ export default {
       }
     },
     async onAfterLoaded(rows){
+      rows.forEach((row) => {
+        row.class = row.is_open === '1' ? '':'opt-5'
+      })
+      this.$refs.table.setRowsValue(rows)
     },
     addaccount(){
       this.$refs.accountInfoDialogRef.submit({
@@ -495,6 +535,11 @@ export default {
     createDeposit(){
       this.$refs.createDepositDialogRef.submit({
         url: 'deposit',
+        value : this.transactionInstance
+      })    },
+      createWithdraw(){
+      this.$refs.createWithdrawDialogRef.submit({
+        url: 'withdraw',
         value : this.transactionInstance
       })    },
       closure(){
