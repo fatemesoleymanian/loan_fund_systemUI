@@ -1,8 +1,7 @@
 <template>
   <q-page class="style">
-    فیلتر براساس و ویرایش چندتایی مونده***
-    *** بستن حساب
-    ***اطالاعات وام و ماهیانه کامل شود
+    //ماهیانه حساب موند
+    حساب های بسته چی میشن؟ جایی نمایش داده میشن و جایی حساب میشن؟//
     <div class="row justify-center text-black h2">حساب ها</div>
 
       <CustomeTable
@@ -12,26 +11,31 @@
           url: 'account',
           arrayKey: 'accounts'
           }"
-
+              :add_button="
+              {
+                  label: 'افتتاح حساب ',
+                  icon: 'add'
+              }"
               :extra_buttons="[
-              {
-                  label: 'ویرایش سهم',
-                  icon: 'list',
-                  emit: 'on-multi-modify'
-              },
-              {
-                  label: 'انتخاب همه',
-                  icon: 'check_box',
-                  emit: 'on-select-all'
-              },
+              // {
+              //     label: 'ویرایش سهم',
+              //     icon: 'list',
+              //     emit: 'on-multi-modify'
+              // },
+              // {
+              //     label: 'انتخاب همه',
+              //     icon: 'check_box',
+              //     emit: 'on-select-all'
+              // },
           ]"
           @on-multi-modify="this.multiModifyDialog = true;"
           @on-select-all="onSelectAll"
-          @on-add-button="accountInfoDialog = true"
+          @on-add-button="resetInstance();accountInfoDialog = true"
           @on-delete-account="deleteaccount"
-          @on-edit-account="accountInstance=$event;userInstance=$event.member;accountInfoDialog = true"
+          @on-edit-account="fillInstance($event);accountInfoDialog = true"
           :columns="columns"
-          @on-create-transaction="transactionInstance.account_id=$event.id;accountInstance.balance=$event.balance;createTransactionDialog=true">
+          @on-deposit="transactionInstance.account_id=$event.id;transactionInstance.balance=$event.balance;transactionInstance.description='واریز حساب';createDepositDialog=true"
+          @on-closure="transactionInstance.account_id=$event.id;transactionInstance.balance=$event.balance;transactionInstance.description='بستن حساب';transactionInstance.amount=$event.balance;closureDialog=true">
           <template v-slot:row-select="{ row }">
                 <q-checkbox class="style" v-model="row.select" @click="saveDeselected(row)"/>
               </template>
@@ -52,102 +56,85 @@
             </CustomeTable>
 
       <q-dialog v-model="accountInfoDialog" :persistent="true">
-        <card-panel ref="accountInfoDialogRef" :title="userInstance.id == null ? 'افزودن حساب جدید':'ویرایش اطلاعات حساب'"
+        <card-panel ref="accountInfoDialogRef" :title="accountInstance.id == null ? 'افتتاح حساب ':'ویرایش اطلاعات حساب'"
          size="85%"
-         @on-submit="userInstance.id == null ? addaccount() : updateaccount()"
+         @on-submit="accountInstance.id == null ? addaccount() : updateaccount()"
          :disableNotify="false"
-        @on-success="accountInstance.id == null ? addAccNumber($event) : addAccNumber($event,'put')">
+        @on-success="this.$refs.table.getRows();accountInfoDialog=false;">
 
           <template #body>
-            <div class="row items-center" v-if="userInstance.id != null">
+            <div class="row items-center">
                 <div class="col-12 text-center h3-4 text-dark q-pa-lg font-bold">اطلاعات عضو</div>
                 <div class="col-12 col-sm-6">
                   <q-input type="text" class="style" outlined dense hint="نام و نام خانوادگی"
                   placeholder="نام و نام خانوادگی"
-                   v-model="userInstance.full_name" disable/>
+                   v-model="accountInstance.full_name" />
                 </div>
                 <div class="col-12 col-sm-6">
                   <q-input dense
-                  disable
                 type="text"
                 class="style"
                 outlined
                 placeholder="شماره تلفن همراه"
                 hint="شماره تلفن همراه"
-                v-model="userInstance.mobile_number"/>
+                v-model="accountInstance.mobile_number"/>
                 </div>
                 <div class="col-12 col-sm-6">
                   <q-input type="text" class="style" outlined dense hint="شماره تلفن ثابت"
-                  placeholder="شماره تلفن ثابت" disable
-                   v-model="userInstance.telephone_number"/>
+                  placeholder="شماره تلفن ثابت"
+                   v-model="accountInstance.telephone_number"/>
                 </div>
                 <div class="col-12 col-sm-6">
                   <q-input dense
-                  disable
                 type="text"
                 class="style"
                 outlined
                 placeholder="نام پدر"
                 hint="نام پدر"
-                v-model="userInstance.father_name"/>
+                v-model="accountInstance.father_name"/>
                 </div>
                 <div class="col-12 col-sm-6">
                   <q-input type="text" class="style" outlined dense hint="فکس"
-                  placeholder="فکس" disable
-                   v-model="userInstance.fax"/>
+                  placeholder="فکس"
+                   v-model="accountInstance.fax"/>
                 </div>
                 <div class="col-12 col-sm-6">
                   <q-input dense
-                type="textarea" disable
+                type="textarea"
                 class="style"
                 outlined
                 placeholder="آدرس"
                 hint="آدرس"
-                v-model="userInstance.address"/>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <q-input type="number" min="0" class="style" outlined dense hint="تعداد سهام"
-                  placeholder="تعداد سهام" disable
-                   v-model="userInstance.stock_units"/>
+                v-model="accountInstance.address"/>
                 </div>
                 </div>
                 <q-separator inset />
 
                 <div class="row items-center">
                   <div class="col-12 text-center h3-4 text-dark q-pa-lg font-bold">اطلاعات حساب</div>
-                <div class="col-12 col-sm-6" v-if="userInstance.id == null">
-                  <SelectionInput dense
-                    :option-list="members"
-                    @on-update-model="accountInstance.member_name=$event.label;accountInstance.member_id=$event.value;"
-                    :value="{label:accountInstance.member_name,value:accountInstance.member_id}"
-                    label="نام عضو" />
 
+                <div class="col-12 col-sm-6">
+                  <q-input type="number" min="0" class="style" outlined dense hint="تعداد سهام"
+                  placeholder="تعداد سهام"
+                   v-model="accountInstance.stock_units"/>
                 </div>
                 <div class="col-12 col-sm-6">
-                  <q-input dense
-                    type="text"
-                    class="style"
-                    outlined
-                    placeholder="شماره حساب"
-                    hint="شماره حساب"
-                    v-model="accountInstance.account_number"/>
-
-                </div>
-                <!-- <div class="col-12 col-sm-6">
-                  <q-input dense
+                  <q-input dense  v-if="accountInstance.id == null"
                     type="text"
                     class="style"
                     outlined
                     placeholder="موجودی"
                     hint="موجودی"
                     v-model="accountInstance.balance"/>
-                </div> -->
-                <div class="col-12 col-sm-6 row">
+                    <div v-else>موجودی : {{ accountInstance.balance }}</div>
+                </div>
+
+                <!-- <div class="col-12 col-sm-6 row">
                   <div class="h5-6">وضعیت حساب : </div>
                   <q-btn color="primary"
                    :label="accountInstance.status"
-                    :outline="accountInstance.status === 'بدهکار'"/>
-                </div>
+                    :outline="accountInstance.status === 'بستانکار'"/>
+                </div> -->
                 <div class="col-12 col-sm-6">
                   <q-input dense
                     type="textarea"
@@ -157,24 +144,17 @@
                     hint="توضیحات"
                     v-model="accountInstance.description"/>
                 </div>
+                <div class="col-12 col-sm-6" v-if="accountInstance.id != null">
+                  ماهیانه : {{ accountInstance.monthly_charges }}
+                  </div>
 
             </div>
-            <q-separator inset />
 
-            <div class="row items-center" v-if="userInstance.id != null">
+            <!-- <div class="row items-center" v-if="accountInstance.id != null">
                 <div class="col-12 text-center h3-4 text-dark q-pa-lg font-bold">اطلاعات وام</div>
                 <div>{{ accountInstance.loans }}</div>
-              </div>
-              <div class="row items-center">
-                <div class="col-12 text-center h3-4 text-dark q-pa-lg font-bold">اطلاعات ماهیانه</div>
-                <div>
-                <SelectionInput dense
-                    :option-list="monthlyCharges"
-                    @on-update-model="monthlyChargeInstance.monthly_charge_id=$event.value"
-                    label="ماهیانه"
-                    :value="accountInstance.monthly_charges.length <1 ?{}:{label:accountInstance.monthly_charges[0].title ,value:accountInstance.monthly_charges[0].id}"/>
-                    </div>
-              </div>
+              </div> -->
+
           </template>
         </card-panel>
       </q-dialog>
@@ -195,26 +175,16 @@
           </template>
         </card-panel>
       </q-dialog>
-      <q-dialog v-model="createTransactionDialog" :persistent="true">
-        <card-panel ref="createTransactionDialogRef"
-        title="واریز / برداشت" size="50%"
-         @on-submit="createTransaction"
+      <q-dialog v-model="createDepositDialog" :persistent="true">
+        <card-panel ref="createDepositDialogRef"
+        title="واریز" size="50%"
+         @on-submit="createDeposit"
          :disableNotify="false"
-        @on-success="this.$refs.table.getRows();createTransactionDialog=false;">
+        @on-success="this.$refs.table.getRows();createDepositDialog=false;">
           <template #body>
             <div class="row items-center">
               <div class="col-12 text-center font-bold">
-                موجودی : {{ accountInstance.balance }}
-              </div>
-              <div class="col-12 ">
-                <SelectionInput dense label="صندوق"
-                :option-list="fundAccountsList"
-                @update:model-value="transactionInstance.fund_account_id=$event.value"/>
-              </div>
-              <div class="col-12 ">
-                <SelectionInput dense label="نوع تراکنش"
-                :option-list="transactionsTypes"
-                 @update:model-value="transactionInstance.type=$event.label;transactionInstance.description=`بابت ${$event.label} حساب `"/>
+                موجودی : {{ transactionInstance.balance }}
               </div>
                 <div class="col-12 ">
                   <q-input type="number" min="0" class="style" outlined dense hint="مبلغ"
@@ -230,6 +200,32 @@
           </template>
         </card-panel>
       </q-dialog>
+      <q-dialog v-model="closureDialog" :persistent="true">
+        <card-panel ref="closureDialogRef"
+        title="بستن حساب" size="50%"
+         @on-submit="closure"
+         :disableNotify="false"
+        @on-success="this.$refs.table.getRows();closureDialog=false;">
+          <template #body>
+            <div class="row items-center">
+              <div class="col-12 text-center font-bold">
+                موجودی : {{ transactionInstance.balance }}
+              </div>
+                <div class="col-12 ">
+                  <q-input type="number" disable min="0" class="style" outlined dense hint="مبلغ"
+                  placeholder="مبلغ"
+                   v-model="transactionInstance.amount"/>
+                </div>
+                <div class="col-12 ">
+                  <q-input type="textarea" class="style" outlined dense hint="توضیح"
+                  placeholder="توضیح"
+                   v-model="transactionInstance.description"/>
+                </div>
+            </div>
+            <div class="h3 font-bold">آیا از بستن حساب اطمینان دارید؟ درصورت بستن موجودی حساب کسر شده و حساب غیرفعال میشود!</div>
+          </template>
+        </card-panel>
+      </q-dialog>
 
   </q-page>
 </template>
@@ -240,20 +236,18 @@ import { ref } from 'vue';
 import CustomeTable from 'src/components/CustomeTable.vue';
 import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
-import SelectionInput from 'src/components/SelectionInput.vue';
-import { fundAccountList, membersList, monthlyChargeList, transactionTypes } from 'src/helpers/statics';
 import { getJalaliDate } from 'src/helpers/dateOutputs';
 const columns = [
-{
-  name: 'select',
-  field: 'select',
-  label: 'انتخاب',
-  disable_search: true
-},
+// {
+//   name: 'select',
+//   field: 'select',
+//   label: 'انتخاب',
+//   disable_search: true
+// },
   {
-    name: 'account_number',
+    name: 'id',
     label: 'شماره حساب',
-    field: 'account_number',
+    field: 'id',
     disable_search: true,
   },
   {
@@ -269,9 +263,9 @@ const columns = [
     disable_search: true,
   },
   {
-    name: 'description',
+    name: 'stock_units',
     label: 'تعداد سهم',
-    field: 'description',
+    field: 'stock_units',
     disable_search: true,
   },
   {
@@ -308,10 +302,16 @@ const columns = [
               emit: 'on-edit-account'
             },
             {
-              title: 'واریز/برداشت ',
+              title: 'واریز ',
               icon_name: 'info',
               icon_color: 'primary',
-              emit: 'on-create-transaction'
+              emit: 'on-deposit'
+            },
+            {
+              title: 'بستن حساب ',
+              icon_name: 'close',
+              icon_color: 'negative',
+              emit: 'on-closure'
             },
             // {
             //   title: 'حذف',
@@ -336,7 +336,7 @@ export default {
   setup () {
     const {year , month , day} = getJalaliDate()
     return {
-      userInstance: ref({
+      accountInstance: ref({
         id:null,
         full_name: '',
         mobile_number: '',
@@ -345,18 +345,14 @@ export default {
         fax: '',
         stock_units: '',
         address: '',
-        // join_date: ''
-      }),
-      accountInstance: ref({
         account_id: '',
         balance: 0,
-        account_number: '',
-        account_name: '',
-        status: '',
-        member_id:'',
+        status: 'بستانکار',
+        is_open: true,
+        member_id:null,
         member_name:'',
         description:'',
-        loans:[],
+        // loans:[],
         monthly_charges:[{title:'',value:0}]
       }),
       monthlyChargeInstance:ref({
@@ -367,12 +363,12 @@ export default {
       transactionInstance:ref({
         account_id:null,
         amount:null,
-        type:'',
         description:'',
-        fund_account_id:null
+        balance:0
       }),
       accountInfoDialog: ref(false),
-      createTransactionDialog: ref(false),
+      createDepositDialog: ref(false),
+      closureDialog: ref(false),
       columns,
       stock_units: ref(0),
       deselecteds:ref([]),
@@ -385,14 +381,51 @@ export default {
   },
   data(){
     return{
-      transactionsTypes:transactionTypes.slice(0,2)
     }
     },
   methods:{
+    resetInstance(){
+      this.accountInstance = {
+        id:null,
+        full_name: '',
+        mobile_number: '',
+        telephone_number: '',
+        father_name: '',
+        fax: '',
+        stock_units: '',
+        address: '',
+        account_id: '',
+        balance: 0,
+        status: 'بستانکار',
+        is_open: true,
+        member_id:null,
+        member_name:'',
+        description:'',
+        // loans:[],
+        monthly_charges:[{title:'',value:0}]
+      }
+    },
+    fillInstance(instance){
+      this.accountInstance = {
+        id:instance.id,
+        full_name: instance.member_name,
+        mobile_number: instance.member.mobile_number,
+        telephone_number: instance.member.telephone_number,
+        father_name: instance.member.father_name,
+        fax: instance.member.fax,
+        stock_units: instance.stock_units,
+        address: instance.member.address,
+        account_id: instance.id,
+        balance: instance.balance,
+        status: instance.status,
+        is_open: instance.is_open,
+        member_id:instance.member.id,
+        member_name:instance.member.full_name,
+        description:instance.description,
+        monthly_charges:instance.monthly_charges ?[{title:'',value:0}]:[]
+      }
+    },
     async onAfterLoaded(rows){
-      this.members = await membersList()
-      this.monthlyCharges = await monthlyChargeList()
-      this.fundAccountsList = await fundAccountList()
     },
     addaccount(){
       this.$refs.accountInfoDialogRef.submit({
@@ -400,76 +433,80 @@ export default {
         value : this.accountInstance
       })
     },
-    async addAccNumber(response, method='post'){
-        /**TODO */
-       this.monthlyChargeInstance.account_id = this.accountInstance.id
-      await api.post('monthly_charge_member',{...this.monthlyChargeInstance}).then(res=>{
-        this.accountInfoDialog = false;
-        this.$refs.table.getRows()
-      }).catch(error=>{
-        alert(error.response.data.message)
-      })
-    },
+    // async addAccNumber(response, method='post'){
+    //     /**TODO */
+    //    this.monthlyChargeInstance.account_id = this.accountInstance.id
+    //   await api.post('monthly_charge_member',{...this.monthlyChargeInstance}).then(res=>{
+    //     this.accountInfoDialog = false;
+    //     this.$refs.table.getRows()
+    //   }).catch(error=>{
+    //     alert(error.response.data.message)
+    //   })
+    // },
     updateaccount(){
-
       this.$refs.accountInfoDialogRef.submit({
         url: 'account',
         value : this.accountInstance
       },'put')
     },
-    async deleteaccount(account){
-      this.$emit('on-ok-dialog', {
-        message: `آیا از حذف حساب اطمینان دارید؟`,
-        icon: 'delete',
-        color: 'negative',
-        textColor: 'white',
-        onOk: async () => {
-          await api.post('account/delete',{id:account.id}).then(res=>{
-        this.$refs.table.getRows()
-      }).catch(error=>{
-        alert(error.response.data.message)
-      })
-        }
-      })
-    },
-    onSelectAll () {
-      this.stock_units = 0
-      this.selectAll = !this.selectAll
-      this.deselecteds = []
-      this.onSelectAllaccounts()
-    },
-    saveDeselected (row) {
-      if (!row.select) {
-        this.deselecteds.push(row.id)
-      }
-    },
-    onSelectAllaccounts () {
-      const r = this.$refs.table.getRowsValue()
-      const itemsNotInDeselecteds = r.filter(item => !this.deselecteds.includes(item.id))
-      if (itemsNotInDeselecteds.length > 0) {
-        itemsNotInDeselecteds.forEach(item => {
-          item.select = this.selectAll
-        })
-      }
-    },
-    updateManyaccounts(){
-      const account_ids = this.$refs.table.getRowsValue().filter(item => item.select).map(item => item.id)
+    // async deleteaccount(account){
+    //   this.$emit('on-ok-dialog', {
+    //     message: `آیا از حذف حساب اطمینان دارید؟`,
+    //     icon: 'delete',
+    //     color: 'negative',
+    //     textColor: 'white',
+    //     onOk: async () => {
+    //       await api.post('account/delete',{id:account.id}).then(res=>{
+    //     this.$refs.table.getRows()
+    //   }).catch(error=>{
+    //     alert(error.response.data.message)
+    //   })
+    //     }
+    //   })
+    // },
+    // onSelectAll () {
+    //   this.stock_units = 0
+    //   this.selectAll = !this.selectAll
+    //   this.deselecteds = []
+    //   this.onSelectAllaccounts()
+    // },
+    // saveDeselected (row) {
+    //   if (!row.select) {
+    //     this.deselecteds.push(row.id)
+    //   }
+    // },
+    // onSelectAllaccounts () {
+    //   const r = this.$refs.table.getRowsValue()
+    //   const itemsNotInDeselecteds = r.filter(item => !this.deselecteds.includes(item.id))
+    //   if (itemsNotInDeselecteds.length > 0) {
+    //     itemsNotInDeselecteds.forEach(item => {
+    //       item.select = this.selectAll
+    //     })
+    //   }
+    // },
+    // updateManyaccounts(){
+    //   const account_ids = this.$refs.table.getRowsValue().filter(item => item.select).map(item => item.id)
 
-      this.$refs.multiModifyDialogRef.submit({
-        url: 'account/update_stocks',
-        value : { account_ids , stock_units:this.stock_units}
-      },'put')
-    },
-    createTransaction(){
-      this.$refs.createTransactionDialogRef.submit({
-        url: 'transaction',
+    //   this.$refs.multiModifyDialogRef.submit({
+    //     url: 'account/update_stocks',
+    //     value : { account_ids , stock_units:this.stock_units}
+    //   },'put')
+    // },
+    createDeposit(){
+      this.$refs.createDepositDialogRef.submit({
+        url: 'deposit',
         value : this.transactionInstance
-      })    }
+      })    },
+      closure(){
+        this.$refs.closureDialogRef.submit({
+        url: 'withdraw/closure',
+        value : this.transactionInstance
+      },'put')
+      }
   },
   components:{
     CustomeTable,
-    CardPanel,
-    SelectionInput
-  }
+    CardPanel
+    }
 }
 </script>

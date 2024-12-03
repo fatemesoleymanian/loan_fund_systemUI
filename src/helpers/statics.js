@@ -20,7 +20,7 @@ export async function accountsList (){
  await api.get('account/list').then(res=>{
 
   res.data.accounts.forEach(account=>{
-    listt.push({label:account.member_name +' - '+ account.account_number , value:account.id, data:account})
+    listt.push({label:account.member_name +' - '+ account.id , value:account.id, data:account})
   })
 
  }).catch(error=>{

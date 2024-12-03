@@ -1,6 +1,5 @@
 <template>
   <q-page class="style">
-    //قسمت برداشت از موجودی و انتخاب اعضا در اثاثیه موند1)
     //2) دفتر روزانه موند
     <div class="row justify-center text-black h2">مدیریت حساب های صندوق</div>
     <div class="row">
@@ -90,7 +89,7 @@
               description:'',
               money_source:'از کارمزد',
               accounts:null
-              };assestInfoDialog=true;"
+              };tmpAccounts=[];assestInfoDialog=true;"
               @on-delete-asset="deleteAsses"
               @on-edit-asset="assetInstance=$event;assestInfoDialog=true;"
               :columns="assestColumns">
@@ -125,7 +124,7 @@
               description:'',
               money_source:'از کارمزد',
               accounts:null
-              };charityInfoDialog=true;"
+              };tmpAccounts=[];charityInfoDialog=true;"
               @on-delete-charity="deleteCharity"
               @on-edit-charity="charityInstance=$event;charityInfoDialog=true;"
               :columns="charityColumns">
@@ -212,6 +211,7 @@
               </div>
               <div class="col-12 col-sm-6" v-if="assetInstance.money_source === 'از موجودی'">
                 <SelectionInput dense
+                    :multible="true"
                     :option-list="member_accounts"
                     @on-update-model="makeAccountsField"
                     label="انتخاب حساب ها" />
@@ -256,6 +256,7 @@
               </div>
               <div class="col-12 col-sm-6" v-if="charityInstance.money_source === 'از موجودی'">
                 <SelectionInput dense
+                 :multible="true"
                     :option-list="member_accounts"
                     @on-update-model="makeAccountsField"
                     label="انتخاب حساب ها" />
@@ -465,7 +466,8 @@ export default {
       balance_change:ref(0),
       fundAccountsList:ref([]),
       current_acc:ref(null),
-      member_accounts:ref([])
+      member_accounts:ref([]),
+      tmpAccounts:ref([])
     }
   },
   data(){
@@ -484,9 +486,11 @@ export default {
         fees: 0,
         expenses:0,
         name: 'صندوق قرض الحسنه (اصلی)'}
-        this.member_accounts = await accountsList()
         this.fundAccountInfoDialog = true
-      }else this.current_acc = this.fundAccountsList[0]
+      }else {
+        this.member_accounts = await accountsList()
+        this.current_acc = this.fundAccountsList[0]
+      }
     },
     addfundAccount(){
       this.$refs.fundAccountInfoDialogRef.submit({
@@ -540,6 +544,7 @@ export default {
       })
     },
     addAsset(){
+       this.assetInstance.accounts = this.splitAccountsForCharityAndAsset()
       this.assetInstance.fund_acc_id = this.current_acc.value
       this.$refs.assestInfoDialogRef.submit({
         url: 'asset',
@@ -553,19 +558,32 @@ export default {
       },'put')
     },
     makeAccountsField(val){
-      console.log(val)
+      this.tmpAccounts = val
     },
-        addCharity(){
+    addCharity(){
+      this.charityInstance.accounts = this.splitAccountsForCharityAndAsset()
       this.charityInstance.fund_acc_id = this.current_acc.value
       this.$refs.charityInfoDialogRef.submit({
         url: 'charity',
         value : this.charityInstance
       })
     },
+    splitAccountsForCharityAndAsset(){
+      let accs = ''
+      if(this.tmpAccounts == null) return null
+      else {
+        this.tmpAccounts.forEach((acc,indx)=>{
+        if (indx != 0) accs += ','
+        accs += acc.value
+      })
+      return accs;
+    }
+    }
   },
   components:{
     CustomeTable,
     CardPanel,
+    SelectionInput
   }
 }
 </script>
