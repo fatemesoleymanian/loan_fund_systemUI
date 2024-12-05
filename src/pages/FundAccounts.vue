@@ -1,6 +1,13 @@
 <template>
   <q-page class="style">
-    //آیا هزینه ها روتو برداشت ها بیارم؟
+    دفتر روزانه:
+          باید اینجا از تاریخ تا تاریخ بگیری و تمام واریزی ها و برداشت ها (پرداخت وام - کارمزد - اقساط - ماهیانه - )
+          <br>
+          مجموع مبالغم زیر بیفته
+          <br>
+          ستونها: تاریخ - حساب بستانکار - حساب بدهکار - مبلغ - علت
+          <br>
+          حساب بدهکار یا بستانکار میتونه یا صندوق باشه یا عضو
     <div class="row justify-center text-black h2">مدیریت حساب های صندوق</div>
     <div class="row">
       <div class="col-8">
@@ -63,6 +70,9 @@
             </div>
             <div class="col-12 q-pa-sm">
            موجودی کل : {{ current_acc.data.total_balance }}
+            </div>
+            <div class="col-12 q-pa-sm">
+           وضعیت : {{ current_acc.data.status }}
             </div>
             </div>
           </q-tab-panel>
@@ -137,14 +147,18 @@
           </q-tab-panel>
           <q-tab-panel name="todayReport">
             <q-tabs v-model="todayTab" dense class="text-grey"  active-color="primary" indicator-color="primary" align="justify"
-          narrow-indicator>
+          narrow-indicator @update:model-value="tabUpdated">
         <q-tab name="deposits" icon="alarm" label="واریزی ها" />
         <q-tab name="withdraws" icon="movie" label="برداشت ها" />
+        <q-tab name="transactions" icon="movie" label="گزارش تراکنش ها" />
              </q-tabs>
              <q-separator />
 
         <q-tab-panels v-model="todayTab" animated>
           <q-tab-panel name="deposits">
+            <q-input label="از تاریخ" v-model="filter.from"/>
+            <q-input label="تا تاریخ" v-model="filter.to"/>
+            <q-btn label="نمایش" @click="search"/>
             <CustomeTable
             ref="depositsTable"
             :table="{
@@ -154,7 +168,7 @@
               }"
 
               @summation-after-loaded="depositsSummation = $event"
-              :columns="dep_withd_Columns">
+              :columns="depositAndWithdrawColumns">
               <template v-slot:row-created_at="{ row }">
                     <div class="h5">{{row.created_at }}</div>
                   </template>
@@ -164,6 +178,9 @@
           </div>
           </q-tab-panel>
           <q-tab-panel name="withdraws">
+            <q-input label="از تاریخ" v-model="filter.from"/>
+            <q-input label="تا تاریخ" v-model="filter.to"/>
+            <q-btn label="نمایش" @click="search"/>
             <CustomeTable
             ref="withdrawsTable"
             :table="{
@@ -173,13 +190,35 @@
               }"
 
               @summation-after-loaded="withdrawsSummation = $event"
-              :columns="dep_withd_Columns">
+              :columns="depositAndWithdrawColumns">
               <template v-slot:row-created_at="{ row }">
                     <div class="h5">{{row.created_at }}</div>
                   </template>
           </CustomeTable>
           <div class="row q-pa-sm justify-center">
             <div class="col-12">مجموع برداشت ها : {{ withdrawsSummation }} ریال</div>
+          </div>
+          </q-tab-panel>
+          <q-tab-panel name="transactions">
+            <q-input label="از تاریخ" v-model="filter.from"/>
+            <q-input label="تا تاریخ" v-model="filter.to"/>
+            <q-btn label="نمایش" @click="search"/>
+            <CustomeTable
+            ref="transactionsTable"
+            :table="{
+              url: `transaction${searchQuery}`,
+              arrayKey: 'transactions',
+              summation: 'amounts'
+              }"
+
+              @summation-after-loaded="transactionsSummation = $event"
+              :columns="transactionsColumns">
+              <template v-slot:row-created_at="{ row }">
+                    <div class="h5">{{row.created_at }}</div>
+                  </template>
+          </CustomeTable>
+          <div class="row q-pa-sm justify-center">
+            <div class="col-12">مجموع مبالغ : {{ transactionsSummation }} ریال</div>
           </div>
           </q-tab-panel>
           </q-tab-panels>
@@ -454,7 +493,7 @@ const charityColumns = [
   //   ]
   // }
 ]
-const dep_withd_Columns = [
+const depositAndWithdrawColumns = [
 {
     name: 'id',
     label: 'شناسه',
@@ -477,6 +516,44 @@ const dep_withd_Columns = [
     name: 'description',
     label: 'توضیح',
     field: 'description',
+    disable_search: true,
+  },
+  {
+    name: 'created_at',
+    label: 'تاریخ ',
+    field: 'created_at',
+    disable_search: true,
+  }
+]
+const transactionsColumns = [
+{
+    name: 'id',
+    label: 'شناسه',
+    field: 'id',
+    disable_search: true,
+  },
+  {
+    name: 'account_id',
+    label: 'حساب بستانکار',
+    field: 'account_id',
+    disable_search: true,
+  },
+  {
+    name: 'account_id',
+    label: 'حساب بدهکار',
+    field: 'account_id',
+    disable_search: true,
+  },
+  {
+    name: 'amount',
+    label: 'مبلغ',
+    field: 'amount',
+    disable_search: true,
+  },
+  {
+    name: 'type',
+    label: 'علت',
+    field: 'type',
     disable_search: true,
   },
   {
@@ -535,23 +612,39 @@ export default {
       costs:ref(0),
       depositsSummation:ref(0),
       withdrawsSummation:ref(0),
+      transactionsSummation:ref(0),
       fundAccountInfoDialog: ref(false),
       assestInfoDialog: ref(false),
       charityInfoDialog: ref(false),
       assestColumns,
       charityColumns,
-      dep_withd_Columns,
+      depositAndWithdrawColumns,
+      transactionsColumns,
       balance_change:ref(0),
       fundAccountsList:ref([]),
       current_acc:ref(null),
       member_accounts:ref([]),
-      tmpAccounts:ref([])
+      tmpAccounts:ref([]),
+      filter:ref({
+        from:'',
+        to:''
+      }),
+      searchQuery:ref('')
     }
   },
   data(){
     this.onAfterLoaded()
     },
   methods:{
+    tabUpdated(tab){
+      console.log(tab)
+      this.searchQuery = ''
+      this.filter.from = ''
+      this.filter.to = ''
+    },
+    search(){
+      this.searchQuery = ''
+    },
     reloadPage(){
      window.location.reload()
     },

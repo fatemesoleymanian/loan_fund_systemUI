@@ -65,15 +65,15 @@ const linksList = [
     link: '#/loans'
   },
   {
-    title: 'ماهیانه ها',
+    title: 'اقساط و ماهیانه ها',
     icon: 'code',
     link: '#/charges'
   },
-  {
-    title: 'تراکنش ها ',
-    icon: 'chat',
-    link: '#/transactions'
-  },
+  // {
+  //   title: 'تراکنش ها ',
+  //   icon: 'chat',
+  //   link: '#/transactions'
+  // },
   {
     title: 'دفترتلفن',
     icon: 'record_voice_over',

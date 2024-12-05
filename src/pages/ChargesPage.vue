@@ -1,7 +1,23 @@
 <template>
   <q-page class="style">
+    <div class="row q-pa-md text-center justify-between">
+    <q-input label="شماره حساب" v-model="filter.id"/>
+    <q-input label="نام حساب" v-model="filter.id"/>
+    <q-input label="تاریخ سررسید" v-model="filter.member_name"/>
+    <q-input label="نوع وام" v-model="filter.member_name"/>
+    <q-input label="نوع ماهانه " v-model="filter.member_name"/>
+    <q-checkbox v-model="filter.is_open" label="پرداخت شده"/>
+    <q-checkbox v-model="filter.is_open" label="پرداخت نشده"/>
+    <q-checkbox v-model="filter.is_open" label="ماهیانه"/>
+    <q-checkbox v-model="filter.is_open" label="قسط"/>
+
+    <q-btn label="جستجو" @click="search" color="primary" size="sm"/>
+   </div>
     <div class="row justify-center text-black h2">ماهیانه ها</div>
 
+    <q-btn label="تنظیم ماهیانه" color="primary" outline @click="grantLoan"/>
+   <q-btn label="تعریف ماهیانه" color="primary" outline @click="addLoan"/>
+   <q-btn label="کارمزد" color="primary" outline @click="addLoan"/>
       <CustomeTable
         ref="table"
         @after-loaded="onAfterLoaded"
@@ -9,11 +25,7 @@
           url: 'monthly_charge',
           arrayKey: 'monthly_charges'
           }"
-            :add_button="
-              {
-                  label: 'ماهیانه جدید',
-                  icon: 'add'
-              }"
+
 
           @on-add-button="monthlyChargeInstance={ id: null,amount: 0,year: year,title: ''};monthlyChargeInfoDialog = true"
           @on-delete-monthlyCharge="deletemonthlyCharge"
@@ -88,33 +100,63 @@ import CardPanel from 'src/components/CardPanel.vue';
 import { getJalaliDate } from 'src/helpers/dateOutputs';
 import SimpleTable from 'src/components/SimpleTable.vue';
 const columns = [
-// {
-//   name: 'select',
-//   field: 'select',
-//   label: 'انتخاب',
-//   disable_search: true
-// },
   {
     name: 'title',
-    label: 'عنوان',
+    label: 'شماره قسط',
     field: 'title',
     disable_search: true,
   },
   {
     name: 'amount',
-    label: 'مبلغ',
+    label: 'شماره حساب ',
     field: 'amount',
     disable_search: true,
   },
   {
     name: 'year',
-    label: 'سال',
+    label: 'عنوان حساب',
     field: 'year',
     disable_search: true,
   },
   {
     name: 'created_at',
-    label: 'تاریخ ایجاد',
+    label: 'شماره وام',
+    field: 'created_at',
+    disable_search: true,
+  },
+  {
+    name: 'created_at',
+    label: 'مبلغ',
+    field: 'created_at',
+    disable_search: true,
+  },
+  {
+    name: 'created_at',
+    label: 'سررسید',
+    field: 'created_at',
+    disable_search: true,
+  },
+  {
+    name: 'created_at',
+    label: 'تاخیر',
+    field: 'created_at',
+    disable_search: true,
+  },
+  {
+    name: 'created_at',
+    label: 'نوع',
+    field: 'created_at',
+    disable_search: true,
+  },
+  {
+    name: 'created_at',
+    label: 'تاریخ پرداخت',
+    field: 'created_at',
+    disable_search: true,
+  },
+  {
+    name: 'created_at',
+    label: 'نوع قسط و ماهیانه',
     field: 'created_at',
     disable_search: true,
   },
@@ -128,23 +170,11 @@ const columns = [
         'q-btn': {
           menu: [
             {
-              title: 'مشاهده/ویرایش',
+              title: 'پرداخت قسط /ماهیانه',
               icon_name: 'info',
               icon_color: 'primary',
               emit: 'on-edit-monthlyCharge'
-            },
-            {
-              title: ' حساب ها',
-              icon_name: 'info',
-              icon_color: 'primary',
-              emit: 'on-accounts-monthlyCharge'
-            },
-            {
-              title: 'حذف',
-              icon_name: 'delete',
-              icon_color: 'primary',
-              emit: 'on-delete-monthlyCharge'
-            },
+            }
           ],
           color: 'primary',
           size: 'xs',

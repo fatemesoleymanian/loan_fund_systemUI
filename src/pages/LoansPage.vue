@@ -1,12 +1,17 @@
 <template>
   <q-page class="style">
-    //به هر حساب همزمان چند وام نمیشه داد
-    //چند نوع وام میخوای تعریف کنی؟
-   ////، ازکدوم صندوق وام به شخص پرداخت شه کی بپرسم؟
-   //سود و کارمزد رو هم باید حساب کنم.
-   //کی بریزم به حساب
+    //زمان اعطای وام چک کن ببینوام و قسط پرداخت نشده اگه داره اطلاع بده
+    <div class="row q-pa-md text-center justify-between">
+    <q-input label="شماره حساب" v-model="filter.id"/>
+    <q-input label="نام حساب" v-model="filter.id"/>
+    <q-input label="تاریخ وام" v-model="filter.member_name"/>
+    <q-input label="نوع وام" v-model="filter.member_name"/>
+    <q-input label="مبلغ وام" v-model="filter.member_name"/>
+    <q-btn label="جستجو" @click="search" color="primary" size="sm"/>
+   </div>
    <div class="row justify-center text-black h2">وام ها</div>
-
+   <q-btn label="اعطای وام" color="primary" outline @click="grantLoan"/>
+   <q-btn label="تعریف انواع وام" color="primary" outline @click="addLoan"/>
       <CustomeTable
         ref="table"
         @after-loaded="onAfterLoaded"
@@ -14,11 +19,6 @@
           url: 'loan',
           arrayKey: 'loans'
           }"
-            :add_button="
-              {
-                  label: 'وام جدید',
-                  icon: 'add'
-              }"
 
               @on-add-button="loanInstance = {id:null,
             principal_amount: '',
@@ -33,8 +33,8 @@
             installments:[],
             intervalDays:1};loanInfoDialog = true"
           @on-delete-loan="deleteloan"
-          @on-edit-loan="onEditLoan"
-          @on-apply-to-account="showAccounts"
+          @on-edit-installments="onEditInstallments"
+          @on-show-installments="getInstallments"
           :columns="columns">
               <template v-slot:row-issue_date="{ row }">
                 <div class="h4-5">{{row.issue_date }}</div>
@@ -46,6 +46,8 @@
                 <div class="h4-5">{{row.end_date }}</div>
               </template>
             </CustomeTable>
+            مجموع مانده وام :
+            مجموع مبلغ وام:
 
       <q-dialog v-model="loanInfoDialog" :persistent="true">
         <card-panel ref="loanInfoDialogRef" :title="loanInstance.id == null ? 'افزودن وام جدید':'ویرایش اطلاعات وام'" size="50%"
@@ -184,9 +186,27 @@ const columns = [
     disable_search: true,
   },
   {
+    name: 'id',
+    label: 'شماره حساب',
+    field: 'id',
+    disable_search: true,
+  },
+  {
     name: 'type',
-    label: 'نوع وام',
+    label: ' ناام',
     field: 'type',
+    disable_search: true,
+  },
+  {
+    name: 'principal_amount',
+    label: 'تاریخ وام',
+    field: 'principal_amount',
+    disable_search: true,
+  },
+  {
+    name: 'principal_amount',
+    label: 'مانده وام',
+    field: 'principal_amount',
     disable_search: true,
   },
   {
@@ -203,20 +223,20 @@ const columns = [
   },
   {
     name: 'issue_date',
-    label: 'تاریخ صدور',
+    label: 'پرداخت شده',
     field: 'issue_date',
     disable_search: true,
   },
   {
-    name: 'due_date',
-    label: 'تاریخ شروع بازپرداخت',
-    field: 'due_date',
+    name: 'principal_amount',
+    label: 'توضیحات',
+    field: 'principal_amount',
     disable_search: true,
   },
   {
-    name: 'end_date',
-    label: 'تاریخ پایان ',
-    field: 'end_date',
+    name: 'principal_amount',
+    label: 'مبلغ پرداخت شده',
+    field: 'principal_amount',
     disable_search: true,
   },
   {
@@ -229,19 +249,19 @@ const columns = [
         'q-btn': {
           menu: [
             {
-              title: 'مشاهده/ویرایش',
+              title: 'اقساط این وام',
               icon_name: 'info',
               icon_color: 'primary',
-              emit: 'on-edit-loan'
+              emit: 'on-show-installments'
             },
             {
-              title: 'اعطای وام',
-              icon_name: 'info',
+              title: 'ویرایش اقساط',
+              icon_name: 'delete',
               icon_color: 'primary',
-              emit: 'on-apply-to-account'
+              emit: 'on-edit-installments'
             },
             {
-              title: 'حذف',
+              title: 'حذف وام',
               icon_name: 'delete',
               icon_color: 'primary',
               emit: 'on-delete-loan'
@@ -264,6 +284,10 @@ export default {
     const {year , month , day} = getJalaliDate()
 
     return {
+      filter:ref({
+
+}),
+searchQuery:ref(''),
       loanInstance: ref({
         id:null,
         principal_amount: '',
@@ -330,6 +354,9 @@ export default {
 
     },
   methods:{
+    search(){
+
+    },
     onEditLoan(event){
       this.loanInstance=event
       this.loanInstance.status === '1' ? this.loanInstance.status=true : this.loanInstance.status=false
@@ -340,25 +367,25 @@ export default {
     async onAfterLoaded(rows){
       this.accounts = await accountsList()
     },
-    calculation(){
-      if (this.loanInstance.number_of_installments !=0 && this.loanInstance.due_date != null){
-        this.showInstallments = false
-        this.installmentTable.rows = []
-        this.loanInstance.installments = []
-        this.loanInstance.installments.length = 0
-        this.calculateInstallmentDates(this.loanInstance.due_date,this.loanInstance.number_of_installments,this.loanInstance.intervalDays*30)
-      }
-    },
-    doPartition(showingDate=true){
-      this.installmentTable.rows = []
-      this.loanInstance.installments.forEach(element=>{
-        this.installmentTable.rows.push([
-          {label:element.inst_number },
-          { label:element.amount_due} ,
-          {label: showingDate ? element.date : element.due_date}])
-      })
-      this.showInstallments = true
-    },
+    // calculation(){
+    //   if (this.loanInstance.number_of_installments !=0 && this.loanInstance.due_date != null){
+    //     this.showInstallments = false
+    //     this.installmentTable.rows = []
+    //     this.loanInstance.installments = []
+    //     this.loanInstance.installments.length = 0
+    //     this.calculateInstallmentDates(this.loanInstance.due_date,this.loanInstance.number_of_installments,this.loanInstance.intervalDays*30)
+    //   }
+    // },
+    // doPartition(showingDate=true){
+    //   this.installmentTable.rows = []
+    //   this.loanInstance.installments.forEach(element=>{
+    //     this.installmentTable.rows.push([
+    //       {label:element.inst_number },
+    //       { label:element.amount_due} ,
+    //       {label: showingDate ? element.date : element.due_date}])
+    //   })
+    //   this.showInstallments = true
+    // },
     addloan(){
       this.loanInstance.due_date = jalaliToGregorian(this.loanInstance.due_date.replaceAll('/','-'))
       this.loanInstance.end_date = jalaliToGregorian(this.loanInstance.end_date.replaceAll('/','-'))
@@ -369,17 +396,17 @@ export default {
       })
       this.loanInstance.installments.length = 0
     },
-    updateloan(){
-      this.loanInstance.due_date = jalaliToGregorian(this.loanInstance.due_date.replaceAll('/','-'))
-      this.loanInstance.end_date = jalaliToGregorian(this.loanInstance.end_date.replaceAll('/','-'))
-      this.loanInstance.issue_date = jalaliToGregorian(this.loanInstance.issue_date.replaceAll('/','-'))
-      this.$refs.loanInfoDialogRef.submit({
-        url: 'loan',
-        value : this.loanInstance
-      },'put')
-      // this.loanInstance.installments.length = 0
+    // updateloan(){
+    //   this.loanInstance.due_date = jalaliToGregorian(this.loanInstance.due_date.replaceAll('/','-'))
+    //   this.loanInstance.end_date = jalaliToGregorian(this.loanInstance.end_date.replaceAll('/','-'))
+    //   this.loanInstance.issue_date = jalaliToGregorian(this.loanInstance.issue_date.replaceAll('/','-'))
+    //   this.$refs.loanInfoDialogRef.submit({
+    //     url: 'loan',
+    //     value : this.loanInstance
+    //   },'put')
+    //   // this.loanInstance.installments.length = 0
 
-    },
+    // },
     async deleteloan(loan){
       this.$emit('on-ok-dialog', {
         message: `آیا از حذف وام اطمینان دارید؟`,
@@ -395,74 +422,83 @@ export default {
         }
       })
     },
-    calculateInstallmentDates(dueDate, numberOfInstallments, intervalDays=30) {
-    const installmentDates = [];
-    const startDate = new Date(jalaliToGregorian(dueDate.replaceAll('/','-')))
-    const amount = Number(this.loanInstance.principal_amount) / Number(this.loanInstance.number_of_installments)
+    onEditInstallments(){
 
-    for (let i = 0; i < numberOfInstallments; i++) {
-        const nextDate = new Date(startDate);
-        nextDate.setDate(startDate.getDate() + i * intervalDays); // Increment by intervalDays
-        installmentDates.push({
-          miladi:nextDate.toISOString().split('T')[0],
-          shamsi:gregorianToJalali(nextDate.toISOString().split('T')[0]).replaceAll('-','/')
-          });
+    },
+    getInstallments(){
 
-    }
-    installmentDates.forEach((inst,index)=>{
-      this.loanInstance.installments.push({
-          due_date:inst.miladi,
-          date:inst.shamsi,
-          amount_due:Math.round(amount),
-          inst_number:`قسط شماره ${index+1} `
-        })
-    })
-    this.loanInstance.end_date = installmentDates[this.loanInstance.number_of_installments-1].shamsi
-    setTimeout(()=>{this.doPartition()},2000)
-},
-    async showAccounts(loan){
-      this.accountsInstance.loan_id = loan.id
-      this.loanInstance.principal_amount = loan.principal_amount
-      this.accountsTable.rows = []
-      await api.get(`loan/${loan.id}`).then(res=>{
-        res.data.loan.accounts.forEach(acc=>{
-          this.accountsInstance.account_ids.push({value:acc.id , label:acc.member_name + ' - '+acc.account_number,data:acc})
-          this.accountsTable.rows.push([
-          {label:acc.member_name },
-          {label:acc.account_number },
-          {label:acc.balance },
-          {label:acc.status },
-          {label:acc.created_at },
-          ])
-        })
-        this.appliedAccsDialog = true
-      }).catch(error=>{
-        alert(error.response.data.msg)
-      })
     },
-    updateAccounts(account){
-      this.accountsInstance.account_ids = account
-      this.accountsTable.rows = []
-      this.accountsTable.rows.length = 0
-      setTimeout(() => {
-        this.accountsInstance.account_ids.forEach(acc=>{
-        this.accountsTable.rows.push([
-        {label:acc.data.member_name },
-          {label:acc.data.account_number },
-          {label:acc.data.balance },
-          {label:acc.data.status },
-          {label:acc.data.created_at },
-        ])
-      })
-      }, 1)
+    grantLoan(){
+
     },
-    async applyLoanToAccounts(){
-      this.accountsInstance.remained_amount = this.loanInstance.principal_amount
-      this.$refs.appliedAccsDialogRef.submit({
-        url: 'loan_acc_details',
-        value : this.accountsInstance
-      })
-    }
+//     calculateInstallmentDates(dueDate, numberOfInstallments, intervalDays=30) {
+//     const installmentDates = [];
+//     const startDate = new Date(jalaliToGregorian(dueDate.replaceAll('/','-')))
+//     const amount = Number(this.loanInstance.principal_amount) / Number(this.loanInstance.number_of_installments)
+
+//     for (let i = 0; i < numberOfInstallments; i++) {
+//         const nextDate = new Date(startDate);
+//         nextDate.setDate(startDate.getDate() + i * intervalDays); // Increment by intervalDays
+//         installmentDates.push({
+//           miladi:nextDate.toISOString().split('T')[0],
+//           shamsi:gregorianToJalali(nextDate.toISOString().split('T')[0]).replaceAll('-','/')
+//           });
+
+//     }
+//     installmentDates.forEach((inst,index)=>{
+//       this.loanInstance.installments.push({
+//           due_date:inst.miladi,
+//           date:inst.shamsi,
+//           amount_due:Math.round(amount),
+//           inst_number:`قسط شماره ${index+1} `
+//         })
+//     })
+//     this.loanInstance.end_date = installmentDates[this.loanInstance.number_of_installments-1].shamsi
+//     setTimeout(()=>{this.doPartition()},2000)
+// },
+//     async showAccounts(loan){
+//       this.accountsInstance.loan_id = loan.id
+//       this.loanInstance.principal_amount = loan.principal_amount
+//       this.accountsTable.rows = []
+//       await api.get(`loan/${loan.id}`).then(res=>{
+//         res.data.loan.accounts.forEach(acc=>{
+//           this.accountsInstance.account_ids.push({value:acc.id , label:acc.member_name + ' - '+acc.account_number,data:acc})
+//           this.accountsTable.rows.push([
+//           {label:acc.member_name },
+//           {label:acc.account_number },
+//           {label:acc.balance },
+//           {label:acc.status },
+//           {label:acc.created_at },
+//           ])
+//         })
+//         this.appliedAccsDialog = true
+//       }).catch(error=>{
+//         alert(error.response.data.msg)
+//       })
+//     },
+//     updateAccounts(account){
+//       this.accountsInstance.account_ids = account
+//       this.accountsTable.rows = []
+//       this.accountsTable.rows.length = 0
+//       setTimeout(() => {
+//         this.accountsInstance.account_ids.forEach(acc=>{
+//         this.accountsTable.rows.push([
+//         {label:acc.data.member_name },
+//           {label:acc.data.account_number },
+//           {label:acc.data.balance },
+//           {label:acc.data.status },
+//           {label:acc.data.created_at },
+//         ])
+//       })
+//       }, 1)
+//     },
+//     async applyLoanToAccounts(){
+//       this.accountsInstance.remained_amount = this.loanInstance.principal_amount
+//       this.$refs.appliedAccsDialogRef.submit({
+//         url: 'loan_acc_details',
+//         value : this.accountsInstance
+//       })
+//     }
   },
   components:{
     CustomeTable,

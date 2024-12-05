@@ -1,13 +1,28 @@
 <template>
   <q-page class="style">
-    //ماهیانه حساب موند
+    //ماهیانه حساب موند<br>
+    //قبل بستن حساب باید تسویه کنه تسویه هم ینی ماهیانه پرداخت نشده یا قسط پرداخت نشده نداشته باشه اگه داره پرداخت کنه اگه نه صفر کنه موجودیشو و بشه تسویه
+
+   <div class="row q-pa-md text-center justify-between">
+    <q-input label="شماره حساب" v-model="filter.id"/>
+    <q-input label="نام حساب" v-model="filter.member_name"/>
+    <q-option-group
+      v-model="filter.status"
+      :options="accountStatus"
+      color="primary"
+      class="h4"
+      inline size="md" keep-color
+    />
+    <q-checkbox v-model="filter.is_open" label="نمایش حساب های بسته شده"/>
+    <q-btn label="جستجو" @click="search" color="primary" size="sm"/>
+   </div>
     <div class="row justify-center text-black h2">حساب ها</div>
 
       <CustomeTable
         ref="table"
         @after-loaded="onAfterLoaded"
         :table="{
-          url: 'account',
+          url: `account${searchQuery}`,
           arrayKey: 'accounts'
           }"
               :add_button="
@@ -15,46 +30,31 @@
                   label: 'افتتاح حساب ',
                   icon: 'add'
               }"
-              :extra_buttons="[
-              // {
-              //     label: 'ویرایش سهم',
-              //     icon: 'list',
-              //     emit: 'on-multi-modify'
-              // },
-              // {
-              //     label: 'انتخاب همه',
-              //     icon: 'check_box',
-              //     emit: 'on-select-all'
-              // },
-          ]"
-          @on-multi-modify="this.multiModifyDialog = true;"
-          @on-select-all="onSelectAll"
           @on-add-button="resetInstance();accountInfoDialog = true"
           @on-delete-account="deleteaccount"
           @on-edit-account="fillInstance($event);accountInfoDialog = true"
           :columns="columns"
           @on-deposit="transactionInstance.account_id=$event.id;transactionInstance.balance=$event.balance;transactionInstance.description='واریز حساب';createDepositDialog=true"
           @on-closure="transactionInstance.account_id=$event.id;transactionInstance.balance=$event.balance;transactionInstance.description='بستن حساب';transactionInstance.amount=$event.balance;closureDialog=true"
-          @on-withdraw="transactionInstance.account_id=$event.id;transactionInstance.balance=$event.balance;transactionInstance.description='برداشت از حساب';createWithdrawDialog=true">
-          <template v-slot:row-select="{ row }">
+          @on-withdraw="transactionInstance.account_id=$event.id;transactionInstance.balance=$event.balance;transactionInstance.description='برداشت از حساب';createWithdrawDialog=true"
+          @on-installments="showInstallments" @on-settelment="checkForSettlement">
+          <!-- <template v-slot:row-select="{ row }">
                 <q-checkbox class="style" v-model="row.select" @click="saveDeselected(row)"/>
-              </template>
-            <template v-slot:row-description="{ row }">
-                <div>{{row.member == null ? '': row.member.stock_units }}</div>
-              </template>
+              </template> -->
+
               <template v-slot:row-created_at="{ row }">
                 <div class="h5">{{row.created_at }}</div>
               </template>
               <template v-slot:row-is_open="{ row }">
                 <div class="h4">{{row.is_open === '1' ? 'باز':' بسته شده' }}</div>
               </template>
-              <template v-slot:row-monthly_charges="{ row }">
-                <div v-if="row.monthly_charges">
-                  <div v-for="m in row.monthly_charges" :key="m">
-                    {{ m.title }}
-                  </div>
+              <template v-slot:row-stock_units="{ row }">
+                <div v-if="row.stock_units > 0">
+                  {{row.stock_units }} سهم
                 </div>
-                <div v-else>ندارد</div>
+                <div v-else>
+                  ندارد
+                </div>
               </template>
             </CustomeTable>
 
@@ -110,6 +110,9 @@
                 hint="آدرس"
                 v-model="accountInstance.address"/>
                 </div>
+                <div class="col-12 col-sm-6">
+                  <q-checkbox v-model="accountInstance.have_sms" label="پیامک دارد"/>
+                  </div>
                 </div>
                 <q-separator inset />
 
@@ -117,8 +120,8 @@
                   <div class="col-12 text-center h3-4 text-dark q-pa-lg font-bold">اطلاعات حساب</div>
 
                 <div class="col-12 col-sm-6">
-                  <q-input type="number" min="0" class="style" outlined dense hint="تعداد سهام"
-                  placeholder="تعداد سهام"
+                  <q-input type="number" min="0" class="style" outlined dense hint="نوع عضویت"
+                  placeholder="نوع عضویت"
                    v-model="accountInstance.stock_units"/>
                 </div>
                 <div class="col-12 col-sm-6">
@@ -133,12 +136,9 @@
                     <div v-else>موجودی : {{ accountInstance.balance }}</div>
                 </div>
 
-                <!-- <div class="col-12 col-sm-6 row">
-                  <div class="h5-6">وضعیت حساب : </div>
-                  <q-btn color="primary"
-                   :label="accountInstance.status"
-                    :outline="accountInstance.status === 'بستانکار'"/>
-                </div> -->
+                <div class="col-12 col-sm-6 row" v-if="accountInstance.id != null">
+                  <div class="h5-6">وضعیت حساب : {{ accountInstance.status }}</div>
+                </div>
                 <div class="col-12 col-sm-6">
                   <q-input dense
                     type="textarea"
@@ -148,37 +148,11 @@
                     hint="توضیحات"
                     v-model="accountInstance.description"/>
                 </div>
-                <div class="col-12 col-sm-6" v-if="accountInstance.id != null">
-                  ماهیانه : {{ accountInstance.monthly_charges }}
-                  </div>
-
-            </div>
-
-            <!-- <div class="row items-center" v-if="accountInstance.id != null">
-                <div class="col-12 text-center h3-4 text-dark q-pa-lg font-bold">اطلاعات وام</div>
-                <div>{{ accountInstance.loans }}</div>
-              </div> -->
-
-          </template>
-        </card-panel>
-      </q-dialog>
-      <q-dialog v-model="multiModifyDialog" :persistent="true">
-        <card-panel ref="multiModifyDialogRef" title="ویرایش تعداد سهام برای اعضا" size="40%"
-         @on-submit="updateManyaccounts"
-         :disableNotify="false"
-        @on-success="this.$refs.table.getRows();multiModifyDialog=false;">
-
-          <template #body>
-            <div class="row items-center">
-                <div class="col-12 col-sm-6">
-                  <q-input type="number" min="0" class="style" outlined dense hint="تعداد سهام"
-                  placeholder="تعداد سهام"
-                   v-model="stock_units"/>
-                </div>
             </div>
           </template>
         </card-panel>
       </q-dialog>
+
       <q-dialog v-model="createDepositDialog" :persistent="true">
         <card-panel ref="createDepositDialogRef"
         title="واریز" size="50%"
@@ -266,6 +240,7 @@ import CustomeTable from 'src/components/CustomeTable.vue';
 import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
 import { getJalaliDate } from 'src/helpers/dateOutputs';
+import { accountStatus } from 'src/helpers/statics';
 const columns = [
 // {
 //   name: 'select',
@@ -286,14 +261,8 @@ const columns = [
     disable_search: true,
   },
   {
-    name: 'balance',
-    label: 'موجودی',
-    field: 'balance',
-    disable_search: true,
-  },
-  {
     name: 'stock_units',
-    label: 'تعداد سهم',
+    label: 'ماهیانه',
     field: 'stock_units',
     disable_search: true,
   },
@@ -304,15 +273,15 @@ const columns = [
     disable_search: true,
   },
   {
-    name: 'is_open',
-    label: 'حساب باز / بسته',
-    field: 'is_open',
+    name: 'balance',
+    label: 'موجودی',
+    field: 'balance',
     disable_search: true,
   },
   {
-    name: 'monthly_charges',
-    label: 'نوع ماهیانه',
-    field: 'monthly_charges',
+    name: 'is_open',
+    label: ' باز / بسته',
+    field: 'is_open',
     disable_search: true,
   },
   {
@@ -343,7 +312,7 @@ const columns = [
               emit: 'on-deposit'
             },
             {
-              title: 'بستن حساب ',
+              title: 'بستن حساب ', //age hesab bastas fa'al nemudane hesabo biar
               icon_name: 'close',
               icon_color: 'negative',
               emit: 'on-closure'
@@ -353,6 +322,18 @@ const columns = [
               icon_name: 'delete',
               icon_color: 'primary',
               emit: 'on-withdraw'
+            },
+            {
+              title: 'تسویه',
+              icon_name: 'delete',
+              icon_color: 'primary',
+              emit: 'on-settelment'
+            },
+            {
+              title: 'اقساط و ماهیانه ها',
+              icon_name: 'delete',
+              icon_color: 'primary',
+              emit: 'on-installments'
             },
           ],
           color: 'primary',
@@ -371,6 +352,12 @@ export default {
   setup () {
     const {year , month , day} = getJalaliDate()
     return {
+      filter:ref({
+        id:'',
+        member_name:'',
+        status:'',
+        is_open:''
+      }),
       accountInstance: ref({
         id:null,
         full_name: '',
@@ -380,15 +367,15 @@ export default {
         fax: '',
         stock_units: '',
         address: '',
+        have_sms:false,
         account_id: '',
         balance: 0,
         status: 'بستانکار',
+        have_sms:false,
         is_open: true,
         member_id:null,
         member_name:'',
         description:'',
-        // loans:[],
-        monthly_charges:[{title:'',value:0}]
       }),
       monthlyChargeInstance:ref({
         account_id:null,
@@ -406,13 +393,7 @@ export default {
       createWithdrawDialog: ref(false),
       closureDialog: ref(false),
       columns,
-      stock_units: ref(0),
-      deselecteds:ref([]),
-      selectAll: ref(false),
-      multiModifyDialog: ref(false),
-      members:ref([]),
-      monthlyCharges:ref([]),
-      fundAccountsList:ref([])
+      searchQuery:ref('')
     }
   },
   data(){
@@ -430,6 +411,7 @@ export default {
         fax: '',
         stock_units: '',
         address: '',
+        have_sms:false,
         account_id: '',
         balance: 0,
         status: 'بستانکار',
@@ -451,6 +433,7 @@ export default {
         fax: instance.member.fax,
         stock_units: instance.stock_units,
         address: instance.member.address,
+        have_sms:instance.have_sms,
         account_id: instance.id,
         balance: instance.balance,
         status: instance.status,
@@ -473,16 +456,6 @@ export default {
         value : this.accountInstance
       })
     },
-    // async addAccNumber(response, method='post'){
-    //     /**TODO */
-    //    this.monthlyChargeInstance.account_id = this.accountInstance.id
-    //   await api.post('monthly_charge_member',{...this.monthlyChargeInstance}).then(res=>{
-    //     this.accountInfoDialog = false;
-    //     this.$refs.table.getRows()
-    //   }).catch(error=>{
-    //     alert(error.response.data.message)
-    //   })
-    // },
     updateaccount(){
       this.$refs.accountInfoDialogRef.submit({
         url: 'account',
@@ -504,34 +477,6 @@ export default {
     //     }
     //   })
     // },
-    // onSelectAll () {
-    //   this.stock_units = 0
-    //   this.selectAll = !this.selectAll
-    //   this.deselecteds = []
-    //   this.onSelectAllaccounts()
-    // },
-    // saveDeselected (row) {
-    //   if (!row.select) {
-    //     this.deselecteds.push(row.id)
-    //   }
-    // },
-    // onSelectAllaccounts () {
-    //   const r = this.$refs.table.getRowsValue()
-    //   const itemsNotInDeselecteds = r.filter(item => !this.deselecteds.includes(item.id))
-    //   if (itemsNotInDeselecteds.length > 0) {
-    //     itemsNotInDeselecteds.forEach(item => {
-    //       item.select = this.selectAll
-    //     })
-    //   }
-    // },
-    // updateManyaccounts(){
-    //   const account_ids = this.$refs.table.getRowsValue().filter(item => item.select).map(item => item.id)
-
-    //   this.$refs.multiModifyDialogRef.submit({
-    //     url: 'account/update_stocks',
-    //     value : { account_ids , stock_units:this.stock_units}
-    //   },'put')
-    // },
     createDeposit(){
       this.$refs.createDepositDialogRef.submit({
         url: 'deposit',
@@ -542,11 +487,28 @@ export default {
         url: 'withdraw',
         value : this.transactionInstance
       })    },
+      checkForClosure(){
+        // check kon bbin ghste pardakht nashode nadare?
+        //age dare bgu dare va beza karbar entkhab kne chikar kne
+
+      },
       closure(){
         this.$refs.closureDialogRef.submit({
         url: 'withdraw/closure',
         value : this.transactionInstance
       },'put')
+      },
+      checkForSettlement(){
+        this.$refs.closureDialogRef.submit({
+        url: 'account/settlement',
+        value : this.transactionInstance
+      },'put')
+      },
+      showInstallments(account){
+
+      },
+      search(){
+        this.searchQuery = ''
       }
   },
   components:{

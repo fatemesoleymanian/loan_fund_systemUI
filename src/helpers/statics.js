@@ -100,3 +100,21 @@ await api.get('fund_account').then(res=>{
  })
  return listt
 }
+export const accountStatus = [
+  {
+    label: 'بدهکار',
+    value: 1
+  },
+  {
+    label: 'تسویه',
+    value: 2
+  },
+  {
+    label: 'بستانکار',
+    value: 2
+  },
+  {
+    label: 'همه',
+    value: 2
+  }
+]
