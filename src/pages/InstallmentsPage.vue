@@ -1,19 +1,19 @@
 <template>
   <q-page class="style">
+    <div class="row justify-center text-black h2">قسط و ماهیانه ها</div>
     <div class="row q-pa-md text-center justify-between">
-    <q-input label="شماره حساب" v-model="filter.id"/>
-    <q-input label="نام حساب" v-model="filter.id"/>
-    <q-input label="تاریخ سررسید" v-model="filter.member_name"/>
-    <q-input label="نوع وام" v-model="filter.member_name"/>
-    <q-input label="نوع ماهانه " v-model="filter.member_name"/>
-    <q-checkbox v-model="filter.is_open" label="پرداخت شده"/>
-    <q-checkbox v-model="filter.is_open" label="پرداخت نشده"/>
-    <q-checkbox v-model="filter.is_open" label="ماهیانه"/>
-    <q-checkbox v-model="filter.is_open" label="قسط"/>
+    <q-input label="شماره حساب" v-model="filter.account_id"/>
+    <q-input label="نام حساب" v-model="filter.account_name"/>
+    <q-input label="تاریخ سررسید" v-model="filter.due_date"/>
+    <q-input label="نوع وام یا ماهانه" v-model="filter.title"/>
+    <!-- <q-input label="نوع ماهانه " v-model="filter.member_name"/> -->
+    <q-checkbox v-model="filter.isPaid" label="پرداخت شده"/>
+    <q-checkbox v-model="filter.isNotPaid" label="پرداخت نشده"/>
+    <q-checkbox v-model="filter.typeM" label="ماهیانه"/>
+    <q-checkbox v-model="filter.typeI" label="قسط"/>
 
     <q-btn label="جستجو" @click="search" color="primary" size="sm"/>
    </div>
-    <div class="row justify-center text-black h2">ماهیانه ها</div>
 
     <q-btn label="تنظیم ماهیانه" color="primary" outline @click="grantLoan"/>
    <q-btn label="تعریف ماهیانه" color="primary" outline @click="addLoan"/>
@@ -22,11 +22,9 @@
         ref="table"
         @after-loaded="onAfterLoaded"
         :table="{
-          url: 'monthly_charge',
-          arrayKey: 'monthly_charges'
+          url: `installment${this.searchQuery}`,
+          arrayKey: 'installments'
           }"
-
-
           @on-add-button="monthlyChargeInstance={ id: null,amount: 0,year: year,title: ''};monthlyChargeInfoDialog = true"
           @on-delete-monthlyCharge="deletemonthlyCharge"
           @on-edit-monthlyCharge="monthlyChargeInstance=$event;monthlyChargeInfoDialog = true"
@@ -99,6 +97,7 @@ import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
 import { getJalaliDate } from 'src/helpers/dateOutputs';
 import SimpleTable from 'src/components/SimpleTable.vue';
+import { useRoute } from 'vue-router';
 const columns = [
   {
     name: 'title',
@@ -190,8 +189,21 @@ const columns = [
 export default {
   setup () {
     const {year , month , day} = getJalaliDate()
-
+    const route = useRoute()
+    const filter = {
+      account_id : route.query.account_id || null,
+      account_name : ref(null),
+      typeM:null,
+      typeI:null,
+      due_date:null,
+      title:null,
+      isPaid:false,
+      isNotPaid:false
+    }
+    const searchQuery = route.query.account_id ? ref(`/search?account_id=${route.query.account_id}&`): ref('')
     return {
+      filter,
+      searchQuery,
       monthlyChargeInstance: ref({
         id: null,
         amount: 0,
@@ -273,7 +285,23 @@ export default {
       });
 
       this.monthlyChargeAccountsDialog=true
-    }
+    },
+    search(){
+        this.searchQuery = ''
+        this.searchQuery = '/search?'
+        if (this.filter.account_id != null && this.filter.account_id !== '') this.searchQuery += `account_id=${this.filter.account_id}&`
+        if (this.filter.account_name != null && this.filter.account_name !== '') this.searchQuery += `account_name=${this.filter.account_name}&`
+        if (this.filter.typeI != null && this.filter.typeI) this.searchQuery += `type=2`
+        if (this.filter.typeM != null && this.filter.typeM) this.searchQuery += `type=1`
+        if (this.filter.due_date != null && this.filter.due_date !== '') this.searchQuery += `due_date=${this.filter.due_date}&`
+        if (this.filter.title != null && this.filter.title !== '') this.searchQuery += `title=${this.filter.title}&`
+        if (this.filter.isPaid) this.searchQuery += `is_paid=true`
+        if (this.filter.isNotPaid) this.searchQuery += `is_paid=false`
+        this.reloadTable()
+      },
+      reloadTable(){
+    setTimeout(()=>{this.$refs.table.getRows()},1)
+  },
   },
   components:{
     CustomeTable,

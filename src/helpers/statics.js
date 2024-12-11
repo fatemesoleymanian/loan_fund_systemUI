@@ -103,18 +103,18 @@ await api.get('fund_account').then(res=>{
 export const accountStatus = [
   {
     label: 'بدهکار',
-    value: 1
+    value: 'بدهکار'
   },
   {
     label: 'تسویه',
-    value: 2
+    value:  'تسویه'
   },
   {
     label: 'بستانکار',
-    value: 2
+    value: 'بستانکار'
   },
   {
     label: 'همه',
-    value: 2
+    value: 4
   }
 ]

@@ -1,28 +1,35 @@
 <template>
   <q-page class="style">
-    //ماهیانه حساب موند<br>
-    //قبل بستن حساب باید تسویه کنه تسویه هم ینی ماهیانه پرداخت نشده یا قسط پرداخت نشده نداشته باشه اگه داره پرداخت کنه اگه نه صفر کنه موجودیشو و بشه تسویه
+بستن / تسویه / اقساط رو وقتی قسط داره تست کن
+    <div class="row justify-center text-black h2">حساب ها</div>
 
-   <div class="row q-pa-md text-center justify-between">
-    <q-input label="شماره حساب" v-model="filter.id"/>
-    <q-input label="نام حساب" v-model="filter.member_name"/>
+   <div class="row q-pa-sm text-center items-center" >
+      <div class="col-3">
+        <q-input label="شماره حساب" type="text" class="style" outlined v-model="filter.id" dense/>
+      </div>
+      <div class="col-3">
+    <q-input type="text" class="style" outlined label="نام حساب" v-model="filter.member_name" dense/>
+    </div>
+    <div class="col-4">
     <q-option-group
       v-model="filter.status"
       :options="accountStatus"
       color="primary"
-      class="h4"
-      inline size="md" keep-color
-    />
-    <q-checkbox v-model="filter.is_open" label="نمایش حساب های بسته شده"/>
-    <q-btn label="جستجو" @click="search" color="primary" size="sm"/>
+      class="h5"
+      dense
+      inline size="md" keep-color/>
+      </div>
+      <div class="col-2">
+    <q-btn label="جستجو" @click="search" dense color="primary" outline/>
+    </div>
    </div>
-    <div class="row justify-center text-black h2">حساب ها</div>
+   <q-checkbox label="نمایش حساب های بسته شده"  v-model="filter.is_open" @update:model-value="reloadTable"/>
 
       <CustomeTable
         ref="table"
         @after-loaded="onAfterLoaded"
         :table="{
-          url: `account${searchQuery}`,
+          url:`${filter.is_open ?'account/all':'account' }${this.searchQuery}`,
           arrayKey: 'accounts'
           }"
               :add_button="
@@ -31,17 +38,7 @@
                   icon: 'add'
               }"
           @on-add-button="resetInstance();accountInfoDialog = true"
-          @on-delete-account="deleteaccount"
-          @on-edit-account="fillInstance($event);accountInfoDialog = true"
-          :columns="columns"
-          @on-deposit="transactionInstance.account_id=$event.id;transactionInstance.balance=$event.balance;transactionInstance.description='واریز حساب';createDepositDialog=true"
-          @on-closure="transactionInstance.account_id=$event.id;transactionInstance.balance=$event.balance;transactionInstance.description='بستن حساب';transactionInstance.amount=$event.balance;closureDialog=true"
-          @on-withdraw="transactionInstance.account_id=$event.id;transactionInstance.balance=$event.balance;transactionInstance.description='برداشت از حساب';createWithdrawDialog=true"
-          @on-installments="showInstallments" @on-settelment="checkForSettlement">
-          <!-- <template v-slot:row-select="{ row }">
-                <q-checkbox class="style" v-model="row.select" @click="saveDeselected(row)"/>
-              </template> -->
-
+          :columns="columns">
               <template v-slot:row-created_at="{ row }">
                 <div class="h5">{{row.created_at }}</div>
               </template>
@@ -55,6 +52,41 @@
                 <div v-else>
                   ندارد
                 </div>
+              </template>
+              <template v-slot:row-action="{ row }">
+                <q-btn icon="more_horiz" class="action-btn" size="xs" rounded dense outline unelevated
+                  color="primary" >
+                  <q-menu  class="font-demi-bold h4-5">
+                      <q-list v-if="row.is_open == 1">
+                        <q-item clickable @click="fillInstance(row);accountInfoDialog = true" >
+                          <q-item-section>مشاهده / ویرایش</q-item-section>
+                        </q-item>
+                        <q-item clickable @click="prepareDepositDialog(row)" >
+                          <q-item-section>واریز</q-item-section>
+                        </q-item>
+                        <q-item clickable @click="prepareWithdrawDialog(row)" >
+                          <q-item-section>برداشت</q-item-section>
+                        </q-item>
+                        <q-item clickable @click="showInstallments(row)" >
+                          <q-item-section>اقساط و ماهیانه ها</q-item-section>
+                        </q-item>
+                        <q-item clickable @click="settlement(row)" >
+                          <q-item-section>تسویه حساب</q-item-section>
+                        </q-item>
+                        <q-item clickable @click="closure(row)" >
+                          <q-item-section>بستن حساب</q-item-section>
+                        </q-item>
+                      </q-list>
+                      <q-list v-else>
+                        <q-item clickable @click="fillInstance(row);accountInfoDialog = true" >
+                          <q-item-section>مشاهده / ویرایش</q-item-section>
+                        </q-item>
+                        <q-item clickable @click="activate(row)" >
+                          <q-item-section>فعالسازی حساب</q-item-section>
+                        </q-item>
+                      </q-list>
+                      </q-menu>
+                  </q-btn>
               </template>
             </CustomeTable>
 
@@ -133,12 +165,12 @@
                     placeholder="موجودی"
                     hint="موجودی"
                     v-model="accountInstance.balance"/>
-                    <div v-else>موجودی : {{ accountInstance.balance }}</div>
+                    <div class="row items-center text-center" v-else>
+                      <div class="col-6 h4">موجودی : {{ accountInstance.balance }}</div>
+                      <div class="col-6 h4-5">وضعیت حساب : {{ accountInstance.status }}</div>
+                    </div>
                 </div>
 
-                <div class="col-12 col-sm-6 row" v-if="accountInstance.id != null">
-                  <div class="h5-6">وضعیت حساب : {{ accountInstance.status }}</div>
-                </div>
                 <div class="col-12 col-sm-6">
                   <q-input dense
                     type="textarea"
@@ -148,6 +180,7 @@
                     hint="توضیحات"
                     v-model="accountInstance.description"/>
                 </div>
+
             </div>
           </template>
         </card-panel>
@@ -161,9 +194,47 @@
         @on-success="this.$refs.table.getRows();createDepositDialog=false;">
           <template #body>
             <div class="row items-center">
-              <div class="col-12 text-center font-bold">
+              <div class="col-6 ">
+                 شماره حساب : {{accountInstance.id}}
+                </div>
+                <div class="col-6 ">
+                 نام حساب : {{accountInstance.full_name}}
+                </div>
+              <div class="col-6 font-demi-bold">
                 موجودی : {{ transactionInstance.balance }}
               </div>
+              <div class="col-6 ">
+                 عضویت : {{accountInstance.stock_units}} سهمی
+                </div>
+                <div class="col-6 ">
+                 وضعیت حساب : {{accountInstance.status}}
+                </div>
+                </div>
+                <q-separator inset />
+                  <div class="row q-my-md">
+                    <div class="table-container q-mb-sm">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>تاریخ </th>
+                          <th>حساب </th>
+                          <th>مبلغ </th>
+                          <th>توضیحات</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr  v-for="(d,i) in accountInstance.deposits" :key="i">
+                          <td>{{ d.created_at}}</td>
+                          <td>صندوق </td>
+                          <td>{{ d.amount }}</td>
+                          <td>{{ d.description }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    </div>
+                  </div>
+                <q-separator inset />
+                <div class="row items-center">
                 <div class="col-12 ">
                   <q-input type="number" min="0" class="style" outlined dense hint="مبلغ"
                   placeholder="مبلغ"
@@ -186,9 +257,48 @@
         @on-success="this.$refs.table.getRows();createWithdrawDialog=false;">
           <template #body>
             <div class="row items-center">
-              <div class="col-12 text-center font-bold">
+              <div class="col-6 ">
+                 شماره حساب : {{accountInstance.id}}
+                </div>
+                <div class="col-6 ">
+                 نام حساب : {{accountInstance.full_name}}
+                </div>
+              <div class="col-6 font-bold">
                 موجودی : {{ transactionInstance.balance }}
               </div>
+              <div class="col-6 ">
+                 عضویت : {{accountInstance.stock_units}} سهمی
+                </div>
+                <div class="col-6 ">
+                 وضعیت حساب : {{accountInstance.status}}
+                </div>
+                </div>
+
+                <q-separator inset />
+                  <div class="row q-my-md">
+                    <div class="table-container q-mb-sm">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>تاریخ </th>
+                          <th>حساب </th>
+                          <th>مبلغ </th>
+                          <th>توضیحات</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr  v-for="(d,i) in accountInstance.withdraws" :key="i">
+                          <td>{{ d.created_at}}</td>
+                          <td>صندوق </td>
+                          <td>{{ d.amount }}</td>
+                          <td>{{ d.description }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    </div>
+                  </div>
+                <q-separator inset />
+                <div class="row items-center">
                 <div class="col-12 ">
                   <q-input type="number" min="0" class="style" outlined dense hint="مبلغ"
                   placeholder="مبلغ"
@@ -203,32 +313,7 @@
           </template>
         </card-panel>
       </q-dialog>
-      <q-dialog v-model="closureDialog" :persistent="true">
-        <card-panel ref="closureDialogRef"
-        title="بستن حساب" size="50%"
-         @on-submit="closure"
-         :disableNotify="false"
-        @on-success="this.$refs.table.getRows();closureDialog=false;">
-          <template #body>
-            <div class="row items-center">
-              <div class="col-12 text-center font-bold">
-                موجودی : {{ transactionInstance.balance }}
-              </div>
-                <div class="col-12 ">
-                  <q-input type="number" disable min="0" class="style" outlined dense hint="مبلغ"
-                  placeholder="مبلغ"
-                   v-model="transactionInstance.amount"/>
-                </div>
-                <div class="col-12 ">
-                  <q-input type="textarea" class="style" outlined dense hint="توضیح"
-                  placeholder="توضیح"
-                   v-model="transactionInstance.description"/>
-                </div>
-            </div>
-            <div class="h3 font-bold">آیا از بستن حساب اطمینان دارید؟ درصورت بستن موجودی حساب کسر شده و حساب غیرفعال میشود!</div>
-          </template>
-        </card-panel>
-      </q-dialog>
+
 
   </q-page>
 </template>
@@ -242,12 +327,6 @@ import CardPanel from 'src/components/CardPanel.vue';
 import { getJalaliDate } from 'src/helpers/dateOutputs';
 import { accountStatus } from 'src/helpers/statics';
 const columns = [
-// {
-//   name: 'select',
-//   field: 'select',
-//   label: 'انتخاب',
-//   disable_search: true
-// },
   {
     name: 'id',
     label: 'شماره حساب',
@@ -294,57 +373,7 @@ const columns = [
     name: 'action',
     field: 'action',
     disable_search: true,
-    label: 'عملیات',
-    tools: [
-      {
-        'q-btn': {
-          menu: [
-            {
-              title: 'مشاهده/ویرایش',
-              icon_name: 'info',
-              icon_color: 'primary',
-              emit: 'on-edit-account'
-            },
-            {
-              title: 'واریز ',
-              icon_name: 'info',
-              icon_color: 'primary',
-              emit: 'on-deposit'
-            },
-            {
-              title: 'بستن حساب ', //age hesab bastas fa'al nemudane hesabo biar
-              icon_name: 'close',
-              icon_color: 'negative',
-              emit: 'on-closure'
-            },
-            {
-              title: 'برداشت',
-              icon_name: 'delete',
-              icon_color: 'primary',
-              emit: 'on-withdraw'
-            },
-            {
-              title: 'تسویه',
-              icon_name: 'delete',
-              icon_color: 'primary',
-              emit: 'on-settelment'
-            },
-            {
-              title: 'اقساط و ماهیانه ها',
-              icon_name: 'delete',
-              icon_color: 'primary',
-              emit: 'on-installments'
-            },
-          ],
-          color: 'primary',
-          size: 'xs',
-          icon: 'more_horiz',
-          round: true,
-          outline: true
-        }
-
-      }
-    ]
+    label: 'عملیات'
   }
 ]
 export default {
@@ -352,11 +381,12 @@ export default {
   setup () {
     const {year , month , day} = getJalaliDate()
     return {
+      accountStatus,
       filter:ref({
-        id:'',
-        member_name:'',
-        status:'',
-        is_open:''
+        id:null,
+        member_name:null,
+        status:4,
+        is_open:false
       }),
       accountInstance: ref({
         id:null,
@@ -371,7 +401,6 @@ export default {
         account_id: '',
         balance: 0,
         status: 'بستانکار',
-        have_sms:false,
         is_open: true,
         member_id:null,
         member_name:'',
@@ -401,6 +430,9 @@ export default {
     }
     },
   methods:{
+  reloadTable(){
+    setTimeout(()=>{this.$refs.table.getRows()},1)
+  },
     resetInstance(){
       this.accountInstance = {
         id:null,
@@ -462,58 +494,140 @@ export default {
         value : this.accountInstance
       },'put')
     },
-    // async deleteaccount(account){
-    //   this.$emit('on-ok-dialog', {
-    //     message: `آیا از حذف حساب اطمینان دارید؟`,
-    //     icon: 'delete',
-    //     color: 'negative',
-    //     textColor: 'white',
-    //     onOk: async () => {
-    //       await api.post('account/delete',{id:account.id}).then(res=>{
-    //     this.$refs.table.getRows()
-    //   }).catch(error=>{
-    //     alert(error.response.data.message)
-    //   })
-    //     }
-    //   })
-    // },
+    async prepareWithdrawDialog(row){
+      this.fillInstance(row)
+      this.transactionInstance.account_id=row.id
+      this.transactionInstance.balance=row.balance
+      this.transactionInstance.description='برداشت از حساب'
+      await api.get(`withdraw/account/latest/${row.id}`).then(res=>{
+        this.accountInstance.withdraws = res.data.withdraws
+        this.createWithdrawDialog=true
+      }).catch(error=>{
+        alert(error.response.data.msg)
+      })
+
+    },
+    async prepareDepositDialog(row){
+      this.fillInstance(row)
+      this.transactionInstance.account_id=row.id
+      this.transactionInstance.balance=row.balance
+      this.transactionInstance.description='واریز حساب'
+      await api.get(`deposit/account/latest/${row.id}`).then(res=>{
+        this.accountInstance.deposits = res.data.deposits
+        this.createDepositDialog=true
+      }).catch(error=>{
+        alert(error.response.data.msg)
+      })
+
+    },
     createDeposit(){
       this.$refs.createDepositDialogRef.submit({
         url: 'deposit',
         value : this.transactionInstance
-      })    },
+      })
+    },
       createWithdraw(){
       this.$refs.createWithdrawDialogRef.submit({
         url: 'withdraw',
         value : this.transactionInstance
-      })    },
-      checkForClosure(){
-        // check kon bbin ghste pardakht nashode nadare?
-        //age dare bgu dare va beza karbar entkhab kne chikar kne
-
+      })
+    },
+      closure(account){
+        this.$emit('on-ok-dialog', {
+        message: `آیا از بستن حساب اطمینان دارید؟`,
+        icon: 'delete',
+        color: 'negative',
+        textColor: 'white',
+        onOk: async () => {
+          await api.put('account/closure',{id:account.id}).then(res=>{
+        this.$refs.table.getRows()
+      }).catch(error=>{
+        if(error.status == 400){
+          alert(error.response.data.msg)
+          // this.$router.push(`/transactions?account_id=${account.id}`)
+        }else alert(error.response.data.msg)
+      })
+        }
+      })
       },
-      closure(){
-        this.$refs.closureDialogRef.submit({
-        url: 'withdraw/closure',
-        value : this.transactionInstance
-      },'put')
+      settlement(account){
+        this.$emit('on-ok-dialog', {
+        message: `آیا از تسویه حساب اطمینان دارید؟`,
+        icon: 'delete',
+        color: 'negative',
+        textColor: 'white',
+        onOk: async () => {
+          await api.put('account/settlement',{id:account.id}).then(res=>{
+        this.$refs.table.getRows()
+      }).catch(error=>{
+        if(error.status == 400){
+          alert(error.response.data.msg)
+          this.showInstallments(account.id)
+        }else alert(error.response.data.msg)
+      })
+        }
+      })
       },
-      checkForSettlement(){
-        this.$refs.closureDialogRef.submit({
-        url: 'account/settlement',
-        value : this.transactionInstance
-      },'put')
+      activate(account){
+        this.$emit('on-ok-dialog', {
+        message: `آیا از فعالسازی حساب اطمینان دارید؟`,
+        icon: 'delete',
+        color: 'negative',
+        textColor: 'white',
+        onOk: async () => {
+          await api.put('account/activate',{id:account.id}).then(res=>{
+        this.$refs.table.getRows()
+      }).catch(error=>{
+       alert(error.response.data.msg)
+      })
+        }
+      })
       },
       showInstallments(account){
-
+        this.$router.push(`/installments?account_id=${account.id}`)
       },
       search(){
         this.searchQuery = ''
+        this.searchQuery = '/search?'
+        if (this.filter.id != null && this.filter.id !== '') this.searchQuery += `id=${this.filter.id}&`
+        if (this.filter.member_name != null && this.filter.member_name !== '') this.searchQuery += `member_name=${this.filter.member_name}&`
+        if (this.filter.status != null && this.filter.status !== 4) this.searchQuery += `status=${this.filter.status}`
+        // this.searchQuery = `/search?id=${this.filter.id}&member_name=${this.filter.member_name}&status=${this.filter.status}`
+        this.reloadTable()
       }
   },
+
   components:{
     CustomeTable,
     CardPanel
     }
 }
 </script>
+<style scoped>
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 18px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  margin: 0 auto;
+}
+
+th, td {
+  text-align: center;
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+thead tr {
+  background-color: #f4f4f4; /* Apply background color only to thead row */
+}
+
+/*tbody tr:nth-child(even) {
+  background-color: #f9f9f9;  Optional alternating row colors
+}*/
+</style>

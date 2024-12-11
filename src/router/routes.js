@@ -10,9 +10,8 @@ const routes = [
     children: [
       { path: '', component: () => import('src/pages/FundAccounts.vue') },
       { path: 'loans', component: () => import('src/pages/LoansPage.vue') },
-      { path: 'charges', component: () => import('src/pages/ChargesPage.vue') },
       { path: 'members', component: () => import('src/pages/MembersPage.vue') },
-      { path: 'transactions', component: () => import('src/pages/TransactionsPage.vue') },
+      { path: 'installments', component: () => import('src/pages/InstallmentsPage.vue') },
       { path: 'accounts', component: () => import('src/pages/AccountsPage.vue') },
     ]
   },

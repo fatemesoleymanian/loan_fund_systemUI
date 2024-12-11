@@ -52,6 +52,6 @@ const router = useRouter()
 
 // Method to check if the item is active
 const itemIsActive = computed(() => {
-  return props.link === router.currentRoute.value.href
+  return props.link === `#${router.currentRoute.value.path}`
 })
 </script>

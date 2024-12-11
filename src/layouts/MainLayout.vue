@@ -1,6 +1,6 @@
 <template>
   <q-layout view="hHh lpR fFf">
-    <q-header elevated class="bg-primary text-white">
+    <q-header dense elevated class="bg-primary text-white" >
       <q-toolbar>
         <q-toolbar-title>
           <q-avatar>
@@ -13,7 +13,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer show-if-above v-model="rightDrawerOpen" side="right" bordered >
+    <q-drawer dense show-if-above v-model="rightDrawerOpen" side="right" bordered :width="200">
       <q-list>
         <q-item-label
           header
@@ -67,13 +67,8 @@ const linksList = [
   {
     title: 'اقساط و ماهیانه ها',
     icon: 'code',
-    link: '#/charges'
+    link: '#/installments'
   },
-  // {
-  //   title: 'تراکنش ها ',
-  //   icon: 'chat',
-  //   link: '#/transactions'
-  // },
   {
     title: 'دفترتلفن',
     icon: 'record_voice_over',

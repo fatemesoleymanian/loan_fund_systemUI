@@ -4,9 +4,7 @@
           باید اینجا از تاریخ تا تاریخ بگیری و تمام واریزی ها و برداشت ها (پرداخت وام - کارمزد - اقساط - ماهیانه - )
           <br>
           مجموع مبالغم زیر بیفته
-          <br>
-          ستونها: تاریخ - حساب بستانکار - حساب بدهکار - مبلغ - علت
-          <br>
+                    <br>
           حساب بدهکار یا بستانکار میتونه یا صندوق باشه یا عضو
     <div class="row justify-center text-black h2">مدیریت حساب های صندوق</div>
     <div class="row">
@@ -95,7 +93,7 @@
               title:'',
               cost:0,
               isExpense:true,
-              fund_acc_id:null,
+              fund_account_id:null,
               description:'',
               money_source:'از کارمزد',
               };assestInfoDialog=true;"
@@ -129,7 +127,7 @@
                id:null,
               amount:0,
               isExpense:true,
-              fund_acc_id:null,
+              fund_account_id:null,
               description:'',
               money_source:'از کارمزد',
               };charityInfoDialog=true;"
@@ -396,38 +394,38 @@ const assestColumns = [
     field: 'created_at',
     disable_search: true,
   },
-  // {
-  //   name: 'actions',
-  //   field: 'actions',
-  //   disable_search: true,
-  //   label: 'عملیات',
-  //   tools: [
-  //     {
-  //       'q-btn': {
-  //         menu: [
-  //           // {
-  //           //   title: 'مشاهده/ویرایش',
-  //           //   icon_name: 'info',
-  //           //   icon_color: 'primary',
-  //           //   emit: 'on-edit-asset'
-  //           // },
-  //           // {
-  //           //   title: 'حذف',
-  //           //   icon_name: 'delete',
-  //           //   icon_color: 'primary',
-  //           //   emit: 'on-delete-asset'
-  //           // },
-  //         ],
-  //         color: 'primary',
-  //         size: 'xs',
-  //         icon: 'more_horiz',
-  //         round: true,
-  //         outline: true
-  //       }
+  {
+    name: 'actions',
+    field: 'actions',
+    disable_search: true,
+    label: 'عملیات',
+    tools: [
+      {
+        'q-btn': {
+          menu: [
+            // {
+            //   title: 'مشاهده/ویرایش',
+            //   icon_name: 'info',
+            //   icon_color: 'primary',
+            //   emit: 'on-edit-asset'
+            // },
+            {
+              title: 'حذف',
+              icon_name: 'delete',
+              icon_color: 'primary',
+              emit: 'on-delete-asset'
+            },
+          ],
+          color: 'primary',
+          size: 'xs',
+          icon: 'more_horiz',
+          round: true,
+          outline: true
+        }
 
-  //     }
-  //   ]
-  // }
+      }
+    ]
+  }
 ]
 const charityColumns = [
 {
@@ -460,38 +458,38 @@ const charityColumns = [
     field: 'created_at',
     disable_search: true,
   },
-  // {
-  //   name: 'actions',
-  //   field: 'actions',
-  //   disable_search: true,
-  //   label: 'عملیات',
-  //   tools: [
-  //     {
-  //       'q-btn': {
-  //         menu: [
-  //           // {
-  //           //   title: 'مشاهده/ویرایش',
-  //           //   icon_name: 'info',
-  //           //   icon_color: 'primary',
-  //           //   emit: 'on-edit-asset'
-  //           // },
-  //           // {
-  //           //   title: 'حذف',
-  //           //   icon_name: 'delete',
-  //           //   icon_color: 'primary',
-  //           //   emit: 'on-delete-asset'
-  //           // },
-  //         ],
-  //         color: 'primary',
-  //         size: 'xs',
-  //         icon: 'more_horiz',
-  //         round: true,
-  //         outline: true
-  //       }
+  {
+    name: 'actions',
+    field: 'actions',
+    disable_search: true,
+    label: 'عملیات',
+    tools: [
+      {
+        'q-btn': {
+          menu: [
+            // {
+            //   title: 'مشاهده/ویرایش',
+            //   icon_name: 'info',
+            //   icon_color: 'primary',
+            //   emit: 'on-edit-asset'
+            // },
+            {
+              title: 'حذف',
+              icon_name: 'delete',
+              icon_color: 'primary',
+              emit: 'on-delete-charity'
+            },
+          ],
+          color: 'primary',
+          size: 'xs',
+          icon: 'more_horiz',
+          round: true,
+          outline: true
+        }
 
-  //     }
-  //   ]
-  // }
+      }
+    ]
+  }
 ]
 const depositAndWithdrawColumns = [
 {
@@ -597,7 +595,7 @@ export default {
         title:'',
         cost:0,
         isExpense:true,
-        fund_acc_id:null,
+        fund_account_id:null,
         description:'',
         money_source:'از کارمزد',
       }),
@@ -605,7 +603,7 @@ export default {
          id:null,
         amount:0,
         isExpense:true,
-        fund_acc_id:null,
+        fund_account_id:null,
         description:'',
         money_source:'از کارمزد',
       }),
@@ -706,8 +704,23 @@ export default {
         color: 'negative',
         textColor: 'white',
         onOk: async () => {
-          await api.post('asset/delete',{id:asset.id}).then(res=>{
-        this.$refs.assestTable.getRows();
+          await api.post('asset/delete',{id:asset.id,fund_account_id:this.current_acc.value}).then(res=>{
+        this.reloadPage();
+      }).catch(error=>{
+        alert(error.response.data.message)
+      })
+        }
+      })
+    },
+    async deleteCharity(charity){
+      this.$emit('on-ok-dialog', {
+        message: `آیا از حذف هزینه اطمینان دارید؟`,
+        icon: 'delete',
+        color: 'negative',
+        textColor: 'white',
+        onOk: async () => {
+          await api.post('charity/delete',{id:charity.id,fund_account_id:this.current_acc.value}).then(res=>{
+        this.reloadPage();
       }).catch(error=>{
         alert(error.response.data.message)
       })
@@ -716,7 +729,7 @@ export default {
     },
     addAsset(){
       //  this.assetInstance.accounts = this.splitAccountsForCharityAndAsset()
-      this.assetInstance.fund_acc_id = this.current_acc.value
+      this.assetInstance.fund_account_id = this.current_acc.value
       this.$refs.assestInfoDialogRef.submit({
         url: 'asset',
         value : this.assetInstance
@@ -733,7 +746,7 @@ export default {
     },
     addCharity(){
       // this.charityInstance.accounts = this.splitAccountsForCharityAndAsset()
-      this.charityInstance.fund_acc_id = this.current_acc.value
+      this.charityInstance.fund_account_id = this.current_acc.value
       this.$refs.charityInfoDialogRef.submit({
         url: 'charity',
         value : this.charityInstance
