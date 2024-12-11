@@ -11,126 +11,102 @@
    </div>
    <div class="row justify-center text-black h2">وام ها</div>
    <q-btn label="اعطای وام" color="primary" outline @click="grantLoan"/>
-   <q-btn label="تعریف انواع وام" color="primary" outline @click="addLoan"/>
+   <q-btn label="تعریف انواع وام" color="primary" outline @click="initLoan"/>
       <CustomeTable
         ref="table"
         @after-loaded="onAfterLoaded"
         :table="{
-          url: 'loan',
-          arrayKey: 'loans'
+          url: 'loan_account',
+          arrayKey: 'loans',
+          summation: 'amounts'
           }"
-
-              @on-add-button="loanInstance = {id:null,
-            principal_amount: '',
-            type: 'وام قرض الحسنه',
-            issue_date: null,
-            number_of_installments: 0,
-            fee:4,
-            end_date: null,
-            status: true,
-            year: year,
-            due_date: null,
-            installments:[],
-            intervalDays:1};loanInfoDialog = true"
-          @on-delete-loan="deleteloan"
-          @on-edit-installments="onEditInstallments"
-          @on-show-installments="getInstallments"
-          :columns="columns">
-              <template v-slot:row-issue_date="{ row }">
-                <div class="h4-5">{{row.issue_date }}</div>
+            @summation-after-loaded="loanSummation = $event"
+              @on-delete-loan="deleteloan"
+              @on-edit-installments="onEditInstallments"
+              @on-show-installments="getInstallments"
+              :columns="columns">
+              <template v-slot:row-created_at="{ row }">
+                <div class="h4-5">{{row.created_at }}</div>
               </template>
-              <template v-slot:row-due_date="{ row }">
-                <div class="h4-5">{{row.due_date }}</div>
-              </template>
-              <template v-slot:row-end_date="{ row }">
-                <div class="h4-5">{{row.end_date }}</div>
+              <template v-slot:row-granted_at="{ row }">
+                <div>{{row.amount - row.paid_amount }}</div>
               </template>
             </CustomeTable>
-            مجموع مانده وام :
-            مجموع مبلغ وام:
+            <div class="q-px-md q-py-sm font-demi-bold row">
+              <div class="col-6">
+              مجموع مانده وام : {{ loanSummation[1] }}
+            </div>
+            <div class="col-6">
+              مجموع مبلغ وام: {{ loanSummation[0] }}
+              </div>
+          </div>
 
       <q-dialog v-model="loanInfoDialog" :persistent="true">
-        <card-panel ref="loanInfoDialogRef" :title="loanInstance.id == null ? 'افزودن وام جدید':'ویرایش اطلاعات وام'" size="50%"
-         @on-submit="loanInstance.id == null ? addloan() : updateloan()"
+        <card-panel ref="loanInfoDialogRef" :title="loanInstance.id == null ? 'تعریف وام جدید':'ویرایش اطلاعات وام'" size="50%"
+         @on-submit="addLoan"
          :disableNotify="false"
-        @on-success="this.$refs.table.getRows();loanInfoDialog=false;">
+        @on-success="loanInfoDialog=false;">
 
           <template #body>
             <div class="row items-center">
-                <div class="col-12 col-sm-6">
-                  <q-input type="number" min="0" class="style" outlined dense
-                  hint="مبلغ وام"
-                  placeholder="مبلغ وام"
-                   v-model="loanInstance.principal_amount"/>
-                </div>
-                <div class="col-12 col-sm-6">
+                  <div class="col-12">
                   <q-input type="text" class="style" outlined dense
-                  hint="نوع وام"
-                  placeholder="نوع وام"
-                   v-model="loanInstance.type"/>
+                  hint="عنوان"
+                  placeholder="عنوان"
+                   v-model="loanInstance.title"/>
                 </div>
-                <div class="col-12 col-sm-6">
+                <div class="col-6">
                   <q-input type="number" min="0" class="style" outlined dense
                   hint="تعداد اقساط"
                   placeholder="تعداد اقساط"
                    v-model="loanInstance.number_of_installments"/>
                 </div>
-                <div class="col-12 col-sm-6">
+                <div class="col-6">
                   <q-input type="number" min="0" class="style" outlined dense
-                  hint="کارمزد" style="display: inline-block;max-width: 150px;"
-                  placeholder="کارمزد"
-                   v-model="loanInstance.fee"/>
-                   <span class="q-px-sm">{{ Math.round((Number(loanInstance.principal_amount) * 4) / 100) }} ریال </span>
+                  hint="درصد کارمزد"
+                  placeholder="درصد کارمزد"
+                   v-model="loanInstance.fee_percent"/>
                 </div>
-                <div class="col-12 col-sm-6" >
+                <div class="col-6">
                   <q-input type="number" min="0" class="style" outlined dense
                   hint="فاصله اقساط"
                   placeholder="فاصله اقساط"
-                   v-model="loanInstance.intervalDays"
-                   suffix="ماه"/>
+                   v-model="loanInstance.installment_interval"
+                   suffix="روز"/>
                 </div>
-                <div class="col-12 col-sm-6">
-                  <q-input  class="style" outlined dense
-                  hint="تاریخ صدور"
-                  placeholder="تاریخ صدور"
-                   v-model="loanInstance.issue_date"
-                    fill-mask="#"
-                   mask="####/##/##"/>
+                <div class="col-6">
+                  <q-input type="number" min="0" class="style" outlined dense
+                  hint="کارمزد ثابت"
+                  placeholder="کارمزد ثابت"
+                   v-model="loanInstance.static_fee"/>
                 </div>
-                <div class="col-12 col-sm-6">
-                  <q-input class="style" outlined dense
-                  hint="تاریخ شروع بازپرداخت"
-                  placeholder="تاریخ شروع بازپرداخت"
-                   fill-mask="#"
-                   mask="####/##/##"
-                   v-model="loanInstance.due_date"/>
+                <div class="col-6">
+                  <q-input type="number" min="0" class="style" outlined dense
+                  hint="سقف وام"
+                  placeholder="سقف وام"
+                   v-model="loanInstance.max_amount"/>
                 </div>
+                <div class="col-6">
+                  <q-input type="number" min="0" class="style" outlined dense
+                  hint="حداقل وام"
+                  placeholder="حداقل وام"
+                   v-model="loanInstance.min_amount"/>
+                </div>
+              </div>
+              <div class="row">
                 <div class="col-12 col-sm-6">
-                  <q-input class="style" outlined dense
+                  <q-checkbox label="وام ضروری"  v-model="loanInstance.emergency"/>
+                  <q-checkbox label="وام بلاعوض"  v-model="loanInstance.no_need_to_pay"/>
+                </div>
+              </div>
+          </template>
+        </card-panel>
+        <!-- <q-input class="style" outlined dense
                   hint="تاریخ پایان"
                   placeholder="تاریخ پایان"
                    fill-mask="#" disable
                    mask="####/##/##"
-                   v-model="loanInstance.end_date"/>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <q-input type="number" min="0" class="style" outlined dense
-                  hint="سال"
-                  placeholder="سال"
-                   v-model="loanInstance.year"/>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <q-toggle v-model="loanInstance.status" label="وضعیت"/>
-                  <q-btn label="قسط بندی " unelevated outline
-              color="primary" class="style" style="margin-left: auto;"
-               @click="calculation" />
-                </div>
-              </div>
-              <div v-if="showInstallments" class="row items-center">
-                <simple-table :init_rows="installmentTable.rows" :init_columns="installmentTable.columns" />
-              </div>
-          </template>
-        </card-panel>
+                   v-model="loanInstance.end_date"/> -->
       </q-dialog>
       <q-dialog v-model="showAccsDialog">
         <card-panel ref="showAccsDialogRef" title="حساب ها " size="50%" :hide_actions="true">
@@ -186,33 +162,33 @@ const columns = [
     disable_search: true,
   },
   {
-    name: 'id',
+    name: 'account_id',
     label: 'شماره حساب',
-    field: 'id',
+    field: 'account_id',
     disable_search: true,
   },
   {
-    name: 'type',
-    label: ' ناام',
-    field: 'type',
+    name: 'account_name',
+    label: ' نام',
+    field: 'account_name',
     disable_search: true,
   },
   {
-    name: 'principal_amount',
+    name: 'created_at',
     label: 'تاریخ وام',
-    field: 'principal_amount',
+    field: 'created_at',
     disable_search: true,
   },
   {
-    name: 'principal_amount',
+    name: 'granted_at',
     label: 'مانده وام',
-    field: 'principal_amount',
+    field: 'granted_at',
     disable_search: true,
   },
   {
-    name: 'principal_amount',
+    name: 'amount',
     label: 'مبلغ وام',
-    field: 'principal_amount',
+    field: 'amount',
     disable_search: true,
   },
   {
@@ -222,21 +198,21 @@ const columns = [
     disable_search: true,
   },
   {
-    name: 'issue_date',
+    name: 'no_of_paid_inst',
     label: 'پرداخت شده',
-    field: 'issue_date',
+    field: 'no_of_paid_inst',
     disable_search: true,
   },
   {
-    name: 'principal_amount',
+    name: 'description',
     label: 'توضیحات',
-    field: 'principal_amount',
+    field: 'description',
     disable_search: true,
   },
   {
-    name: 'principal_amount',
+    name: 'paid_amount',
     label: 'مبلغ پرداخت شده',
-    field: 'principal_amount',
+    field: 'paid_amount',
     disable_search: true,
   },
   {
@@ -282,25 +258,21 @@ export default {
 
   setup () {
     const {year , month , day} = getJalaliDate()
-
     return {
-      filter:ref({
-
-}),
-searchQuery:ref(''),
-      loanInstance: ref({
+        loanSummation:ref([]),
+        filter:ref({}),
+        searchQuery:ref(''),
+        loanInstance: ref({
         id:null,
-        principal_amount: '',
-        type: 'وام قرض الحسنه',
-        issue_date: null,
-        number_of_installments: 0,
-        fee:4,
-        end_date: null,
-        status: true,
-        year: year,
-        due_date: null,
-        installments:[],
-        intervalDays:1
+        title:'',
+        static_fee:0,
+        fee_percent:4,
+        number_of_installments:5,
+        installment_interval:30,
+        max_amount:0,
+        min_amount:0,
+        emergency:false,
+        no_need_to_pay:false
       }),
       accountsInstance:ref({
         loan_id:null,
@@ -311,43 +283,7 @@ searchQuery:ref(''),
       year,
       loanInfoDialog: ref(false),
       columns,
-      showInstallments:ref(false),
-      installmentTable:ref({
-        rows:[],
-        columns:[
-        {
-            label: 'شماره قسط'
-          },
-          {
-            label: 'مبلغ قسط'
-          },
-          {
-            label: 'تاریخ سررسید قسط'
-          }
-        ]
-      }),
-      appliedAccsDialog:ref(false),
-      accounts:ref([]),
-      accountsTable:ref({
-        rows:[],
-        columns:[
-          {
-            label: 'نام حساب'
-          },
-          {
-            label: 'شماره حساب'
-          },
-          {
-            label: 'موجودی حساب'
-          },
-          {
-            label: 'وضعیت حساب'
-          },
-          {
-            label: 'تاریخ عضویت حساب'
-          }
-        ]
-      })
+      accounts:ref([])
     }
   },
   data(){
@@ -357,148 +293,31 @@ searchQuery:ref(''),
     search(){
 
     },
-    onEditLoan(event){
-      this.loanInstance=event
-      this.loanInstance.status === '1' ? this.loanInstance.status=true : this.loanInstance.status=false
-      this.doPartition(false)
-      this.showInstallments = true
-      this.loanInfoDialog = true
-    },
     async onAfterLoaded(rows){
       this.accounts = await accountsList()
     },
-    // calculation(){
-    //   if (this.loanInstance.number_of_installments !=0 && this.loanInstance.due_date != null){
-    //     this.showInstallments = false
-    //     this.installmentTable.rows = []
-    //     this.loanInstance.installments = []
-    //     this.loanInstance.installments.length = 0
-    //     this.calculateInstallmentDates(this.loanInstance.due_date,this.loanInstance.number_of_installments,this.loanInstance.intervalDays*30)
-    //   }
-    // },
-    // doPartition(showingDate=true){
-    //   this.installmentTable.rows = []
-    //   this.loanInstance.installments.forEach(element=>{
-    //     this.installmentTable.rows.push([
-    //       {label:element.inst_number },
-    //       { label:element.amount_due} ,
-    //       {label: showingDate ? element.date : element.due_date}])
-    //   })
-    //   this.showInstallments = true
-    // },
-    addloan(){
-      this.loanInstance.due_date = jalaliToGregorian(this.loanInstance.due_date.replaceAll('/','-'))
-      this.loanInstance.end_date = jalaliToGregorian(this.loanInstance.end_date.replaceAll('/','-'))
-      this.loanInstance.issue_date = jalaliToGregorian(this.loanInstance.issue_date.replaceAll('/','-'))
+    initLoan(){
+      this.loanInstance = {
+        id:null,
+        title:'',
+        static_fee:0,
+        fee_percent:4,
+        number_of_installments:5,
+        installment_interval:30,
+        max_amount:0,
+        min_amount:0,
+        emergency:false,
+        no_need_to_pay:false
+      }
+      this.loanInfoDialog = true
+    },
+    addLoan(){
+      alert('f')
       this.$refs.loanInfoDialogRef.submit({
         url: 'loan',
         value : this.loanInstance
       })
-      this.loanInstance.installments.length = 0
-    },
-    // updateloan(){
-    //   this.loanInstance.due_date = jalaliToGregorian(this.loanInstance.due_date.replaceAll('/','-'))
-    //   this.loanInstance.end_date = jalaliToGregorian(this.loanInstance.end_date.replaceAll('/','-'))
-    //   this.loanInstance.issue_date = jalaliToGregorian(this.loanInstance.issue_date.replaceAll('/','-'))
-    //   this.$refs.loanInfoDialogRef.submit({
-    //     url: 'loan',
-    //     value : this.loanInstance
-    //   },'put')
-    //   // this.loanInstance.installments.length = 0
-
-    // },
-    async deleteloan(loan){
-      this.$emit('on-ok-dialog', {
-        message: `آیا از حذف وام اطمینان دارید؟`,
-        icon: 'delete',
-        color: 'negative',
-        textColor: 'white',
-        onOk: async () => {
-          await api.post('loan/delete',{id:loan.id}).then(res=>{
-        this.$refs.table.getRows()
-      }).catch(error=>{
-        alert(error.response.data.message)
-      })
-        }
-      })
-    },
-    onEditInstallments(){
-
-    },
-    getInstallments(){
-
-    },
-    grantLoan(){
-
-    },
-//     calculateInstallmentDates(dueDate, numberOfInstallments, intervalDays=30) {
-//     const installmentDates = [];
-//     const startDate = new Date(jalaliToGregorian(dueDate.replaceAll('/','-')))
-//     const amount = Number(this.loanInstance.principal_amount) / Number(this.loanInstance.number_of_installments)
-
-//     for (let i = 0; i < numberOfInstallments; i++) {
-//         const nextDate = new Date(startDate);
-//         nextDate.setDate(startDate.getDate() + i * intervalDays); // Increment by intervalDays
-//         installmentDates.push({
-//           miladi:nextDate.toISOString().split('T')[0],
-//           shamsi:gregorianToJalali(nextDate.toISOString().split('T')[0]).replaceAll('-','/')
-//           });
-
-//     }
-//     installmentDates.forEach((inst,index)=>{
-//       this.loanInstance.installments.push({
-//           due_date:inst.miladi,
-//           date:inst.shamsi,
-//           amount_due:Math.round(amount),
-//           inst_number:`قسط شماره ${index+1} `
-//         })
-//     })
-//     this.loanInstance.end_date = installmentDates[this.loanInstance.number_of_installments-1].shamsi
-//     setTimeout(()=>{this.doPartition()},2000)
-// },
-//     async showAccounts(loan){
-//       this.accountsInstance.loan_id = loan.id
-//       this.loanInstance.principal_amount = loan.principal_amount
-//       this.accountsTable.rows = []
-//       await api.get(`loan/${loan.id}`).then(res=>{
-//         res.data.loan.accounts.forEach(acc=>{
-//           this.accountsInstance.account_ids.push({value:acc.id , label:acc.member_name + ' - '+acc.account_number,data:acc})
-//           this.accountsTable.rows.push([
-//           {label:acc.member_name },
-//           {label:acc.account_number },
-//           {label:acc.balance },
-//           {label:acc.status },
-//           {label:acc.created_at },
-//           ])
-//         })
-//         this.appliedAccsDialog = true
-//       }).catch(error=>{
-//         alert(error.response.data.msg)
-//       })
-//     },
-//     updateAccounts(account){
-//       this.accountsInstance.account_ids = account
-//       this.accountsTable.rows = []
-//       this.accountsTable.rows.length = 0
-//       setTimeout(() => {
-//         this.accountsInstance.account_ids.forEach(acc=>{
-//         this.accountsTable.rows.push([
-//         {label:acc.data.member_name },
-//           {label:acc.data.account_number },
-//           {label:acc.data.balance },
-//           {label:acc.data.status },
-//           {label:acc.data.created_at },
-//         ])
-//       })
-//       }, 1)
-//     },
-//     async applyLoanToAccounts(){
-//       this.accountsInstance.remained_amount = this.loanInstance.principal_amount
-//       this.$refs.appliedAccsDialogRef.submit({
-//         url: 'loan_acc_details',
-//         value : this.accountsInstance
-//       })
-//     }
+    }
   },
   components:{
     CustomeTable,
