@@ -1,9 +1,9 @@
 <template>
   <q-page class="style">
-بستن / تسویه / اقساط رو وقتی قسط داره تست کن
+    کامله فقط اقساط روتش درست نیس
     <div class="row justify-center text-black h2">حساب ها</div>
 
-   <div class="row q-pa-sm text-center items-center" >
+   <div class="row text-center items-center" >
       <div class="col-3">
         <q-input label="شماره حساب" type="text" class="style" outlined v-model="filter.id" dense/>
       </div>
@@ -20,7 +20,7 @@
       inline size="md" keep-color/>
       </div>
       <div class="col-2">
-    <q-btn label="جستجو" @click="search" dense color="primary" outline/>
+    <q-btn label="جستجو" @click="search"  color="primary" class="sm-style" outline/>
     </div>
    </div>
    <q-checkbox label="نمایش حساب های بسته شده"  v-model="filter.is_open" @update:model-value="reloadTable"/>

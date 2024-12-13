@@ -49,6 +49,7 @@ import { ref } from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
 import { useQuasar } from 'quasar';
 import OkCancelDialog from 'src/components/Dialogs/OkCancelDialog.vue';
+import { provide } from 'vue';
 defineOptions({
   name: 'MainLayout'
 })
@@ -111,4 +112,8 @@ function onOkDialog (dialogData) {
       okDialogAttrs.value = dialogData
       okDialogOpen.value = true
 }
+provide('onOkDialog', (dialogData) => {
+  okDialogAttrs.value = dialogData;
+  okDialogOpen.value = true;
+})
 </script>

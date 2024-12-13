@@ -187,7 +187,7 @@
       </template>
 
         <template v-slot:top-right v-if="!hide_header" >
-          <div class="row" style="width:100%;">
+          <div class="row" style="width:100%;margin-bottom: 30px">
           <slot name="top-right">
                 <q-btn
                 id="gt-export-table-btn"
@@ -211,7 +211,7 @@
             <!-- <div class="font-bold h2 col-sm-1" v-if="title != null">{{ title }}</div> -->
 
             <div class="col-sm-6 col-12" v-if="hide_searchInput && !hide_header_top_left">
-              <q-input class="q-mx-md style" outlined dense debounce="300" style="min-width: 150px;margin-top: 0px!important;"
+              <!-- <q-input class="q-mx-md style" outlined dense debounce="300" style="min-width: 150px;margin-top: 0px!important;"
               v-model="filter" :placeholder="search_placeholder"
               @keyup.enter="onTotalFilter"
               @update:model-value="if (filter.length === 0) { onTotalFilter() };">
@@ -222,7 +222,7 @@
                   <q-btn label="جستجو" color="primary" unelevated style="border-radius:10px;margin-left: -10px!important;"
                   @click="onTotalFilter"/>
                 </template>
-                  </q-input>
+                  </q-input> -->
             </div>
             <!-- <div class="col-sm-6 col-7" v-if="!hide_header_top_left" id="column-selection-btn">
                 <q-select
@@ -265,7 +265,7 @@
             </div> -->
             </slot>
             <div class="col-sm-12">
-              <div v-if="extra_buttons != null" class="gt-sm text-left justify-start row" style="padding: 0!important;" >
+              <div v-if="extra_buttons != null" class="gt-sm text-left justify-start row" >
             <q-btn  v-for="(b, i) in extra_buttons" :key="b" :label="b.label" :outline="b.outline"
             unelevated size="md" dense :id="`extra-buttons-${i}`"
             :icon="b.icon" class="style q-mx-xs extra-buttons" :loading="b.loader"

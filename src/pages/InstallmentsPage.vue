@@ -1,5 +1,7 @@
 <template>
   <q-page class="style">
+    وقتی از روت کوئری میاد درست کار نمیکنه
+    کامل کردنش مونده
     <div class="row justify-center text-black h2">قسط و ماهیانه ها</div>
     <div class="row q-pa-md text-center justify-between">
     <q-input label="شماره حساب" v-model="filter.account_id"/>
@@ -192,6 +194,7 @@ export default {
     const route = useRoute()
     const filter = {
       account_id : route.query.account_id || null,
+      loan_account_id : route.query.loan_account_id || null,
       account_name : ref(null),
       typeM:null,
       typeI:null,
@@ -200,7 +203,9 @@ export default {
       isPaid:false,
       isNotPaid:false
     }
-    const searchQuery = route.query.account_id ? ref(`/search?account_id=${route.query.account_id}&`): ref('')
+    const searchQuery = route.query.account_id || route.query.loan_account_id ? ref('/search?') : ref('')
+    searchQuery.value += route.query.account_id ? ref(`account_id=${route.query.account_id}&`): ref('')
+    searchQuery.value += route.query.loan_account_id ? ref(`loan_account_id=${route.query.loan_account_id}&`): ref('')
     return {
       filter,
       searchQuery,
@@ -290,6 +295,7 @@ export default {
         this.searchQuery = ''
         this.searchQuery = '/search?'
         if (this.filter.account_id != null && this.filter.account_id !== '') this.searchQuery += `account_id=${this.filter.account_id}&`
+        if (this.filter.loan_account_id != null && this.filter.loan_account_id !== '') this.searchQuery += `loan_account_id=${this.filter.loan_account_id}&`
         if (this.filter.account_name != null && this.filter.account_name !== '') this.searchQuery += `account_name=${this.filter.account_name}&`
         if (this.filter.typeI != null && this.filter.typeI) this.searchQuery += `type=2`
         if (this.filter.typeM != null && this.filter.typeM) this.searchQuery += `type=1`

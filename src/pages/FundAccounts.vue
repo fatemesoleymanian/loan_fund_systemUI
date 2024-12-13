@@ -5,7 +5,6 @@
           <br>
           مجموع مبالغم زیر بیفته
                     <br>
-          حساب بدهکار یا بستانکار میتونه یا صندوق باشه یا عضو
     <div class="row justify-center text-black h2">مدیریت حساب های صندوق</div>
     <div class="row">
       <div class="col-8">
@@ -213,6 +212,12 @@
               :columns="transactionsColumns">
               <template v-slot:row-created_at="{ row }">
                     <div class="h5">{{row.created_at }}</div>
+                  </template>
+                  <template v-slot:row-fund_account_id="{ row }">
+                    <div class="h4-5">{{row.type === 'پرداخت وام' || row.type === 'پرداخت قسط' ? 'صندوق':row.account_id }}</div>
+                  </template>
+                  <template v-slot:row-account_id="{ row }">
+                    <div class="h4-5">{{row.type === 'پرداخت کارمزد' || row.type === 'پرداخت ماهیانه' ? 'صندوق':row.account_id }}</div>
                   </template>
           </CustomeTable>
           <div class="row q-pa-sm justify-center">
@@ -531,9 +536,9 @@ const transactionsColumns = [
     disable_search: true,
   },
   {
-    name: 'account_id',
+    name: 'fund_account_id',
     label: 'حساب بستانکار',
-    field: 'account_id',
+    field: 'fund_account_id',
     disable_search: true,
   },
   {
