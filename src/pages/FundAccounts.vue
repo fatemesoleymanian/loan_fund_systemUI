@@ -1,10 +1,8 @@
 <template>
   <q-page class="style">
     دفتر روزانه:
-          باید اینجا از تاریخ تا تاریخ بگیری و تمام واریزی ها و برداشت ها (پرداخت وام - کارمزد - اقساط - ماهیانه - )
+           (پرداخت وام - کارمزد - اقساط - ماهیانه - )تست کن ببین ماهیانه و اقساط که پرداخت میکنی میفته تو تراکنش ها یا نه
           <br>
-          مجموع مبالغم زیر بیفته
-                    <br>
     <div class="row justify-center text-black h2">مدیریت حساب های صندوق</div>
     <div class="row">
       <div class="col-8">
@@ -75,7 +73,7 @@
           </q-tab-panel>
           <q-tab-panel name="assets">
             <CustomeTable
-            ref="assestTable"
+            ref="table"
             :table="{
               url: 'asset',
               arrayKey: 'assets',
@@ -110,7 +108,7 @@
           </q-tab-panel>
           <q-tab-panel name="charity">
                 <CustomeTable
-            ref="charityTable"
+            ref="table"
             :table="{
               url: 'charity',
               arrayKey: 'charities',
@@ -153,13 +151,15 @@
 
         <q-tab-panels v-model="todayTab" animated>
           <q-tab-panel name="deposits">
-            <q-input label="از تاریخ" v-model="filter.from"/>
-            <q-input label="تا تاریخ" v-model="filter.to"/>
-            <q-btn label="نمایش" @click="search"/>
+            <div class="row items-center text-center">
+              <q-input label="از تاریخ" v-model="filter.from" class="style" outlined dense fill-mask="#" mask="####/##/##"/>
+            <q-input label="تا تاریخ" v-model="filter.to" class="style" outlined dense fill-mask="#" mask="####/##/##"/>
+            <q-btn label="نمایش" @click="search"  color="primary" class="sm-style" outline/>
+            </div>
             <CustomeTable
-            ref="depositsTable"
+            ref="table"
             :table="{
-              url: 'deposit',
+              url: `deposit${searchQuery}`,
               arrayKey: 'deposits',
               summation: 'amounts'
               }"
@@ -175,13 +175,15 @@
           </div>
           </q-tab-panel>
           <q-tab-panel name="withdraws">
-            <q-input label="از تاریخ" v-model="filter.from"/>
-            <q-input label="تا تاریخ" v-model="filter.to"/>
-            <q-btn label="نمایش" @click="search"/>
+            <div class="row items-center text-center">
+              <q-input label="از تاریخ" v-model="filter.from" class="style" outlined dense fill-mask="#" mask="####/##/##"/>
+            <q-input label="تا تاریخ" v-model="filter.to" class="style" outlined dense fill-mask="#" mask="####/##/##"/>
+            <q-btn label="نمایش" @click="search"  color="primary" class="sm-style" outline/>
+            </div>
             <CustomeTable
-            ref="withdrawsTable"
+            ref="table"
             :table="{
-              url: 'withdraw',
+              url: `withdraw${searchQuery}`,
               arrayKey: 'withdraws',
               summation: 'amounts'
               }"
@@ -197,11 +199,13 @@
           </div>
           </q-tab-panel>
           <q-tab-panel name="transactions">
-            <q-input label="از تاریخ" v-model="filter.from"/>
-            <q-input label="تا تاریخ" v-model="filter.to"/>
-            <q-btn label="نمایش" @click="search"/>
+            <div class="row items-center text-center">
+              <q-input label="از تاریخ" v-model="filter.from" class="style" outlined dense fill-mask="#" mask="####/##/##"/>
+            <q-input label="تا تاریخ" v-model="filter.to" class="style" outlined dense fill-mask="#" mask="####/##/##"/>
+            <q-btn label="نمایش" @click="search"  color="primary" class="sm-style" outline/>
+            </div>
             <CustomeTable
-            ref="transactionsTable"
+            ref="table"
             :table="{
               url: `transaction${searchQuery}`,
               arrayKey: 'transactions',
@@ -646,8 +650,15 @@ export default {
       this.filter.to = ''
     },
     search(){
-      this.searchQuery = ''
-    },
+        this.searchQuery = ''
+        this.searchQuery = '/search?'
+        if (this.filter.from != null && this.filter.from !== '') this.searchQuery += `from=${this.filter.from}&`
+        if (this.filter.to != null && this.filter.to !== '') this.searchQuery += `to=${this.filter.to}&`
+        this.reloadTable()
+      },
+      reloadTable(){
+    setTimeout(()=>{this.$refs.table.getRows()},1)
+  },
     reloadPage(){
      window.location.reload()
     },
