@@ -154,7 +154,8 @@
                 <div class="col-12 col-sm-6">
                   <q-input type="number" min="0" class="style" outlined dense hint="نوع عضویت"
                   placeholder="نوع عضویت"
-                   v-model="accountInstance.stock_units"/>
+                   v-model="accountInstance.stock_units"
+                   suffix="سهم"/>
                 </div>
                 <div class="col-12 col-sm-6">
                   <q-input dense  v-if="accountInstance.id == null"

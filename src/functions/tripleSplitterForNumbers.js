@@ -36,3 +36,12 @@ export function prependZeroIfSingleChar(inputString) {
     return inputString
   }
 }
+// utils/numberFormatter.js
+export function formatPrice(value) {
+  if (!value) return '0';
+  return new Intl.NumberFormat('en-US').format(value);
+}
+// export function formatPrice(value) {
+//   if (!value) return '0';
+//   return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+// }

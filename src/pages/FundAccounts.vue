@@ -249,10 +249,10 @@
                    v-model="accountInstance.name"/>
                 </div>
                 <div class="col-12 col-sm-6">
-                  موجودی : {{ accountInstance.balance }}<br>
-                  مجموع کارمزد (درآمد) : {{ accountInstance.fees }}<br>
-                  موجودی کل : {{ accountInstance.total_balance }}<br>
-                  هزینه : {{ accountInstance.expenses }}
+                  موجودی : {{ formatPrice(accountInstance.balance) }}<br>
+                  مجموع کارمزد (درآمد) : {{ formatPrice(accountInstance.fees)}}<br>
+                  موجودی کل : {{ formatPrice(accountInstance.total_balance) }}<br>
+                  هزینه : {{ formatPrice(accountInstance.expenses) }}
 
                 </div>
               </div>
@@ -366,6 +366,7 @@ import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
 import { accountsList, fundAccountList, fundAccTypeList } from 'src/helpers/statics';
 import SelectionInput from 'src/components/SelectionInput.vue';
+import { formatPrice } from 'src/functions/tripleSplitterForNumbers';
 const assestColumns = [
 {
     name: 'id',

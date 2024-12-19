@@ -13,7 +13,7 @@
       :class="`style ${extra_class}+ ${stickyTop ? ' custom-sticky-header-table': ''}${fit_width ? ' q-table-max-width': ''}`"
       flat :bordered="bordered"
       :hide-bottom="hide_buttom"
-      :rows="rowsValue != null ? rowsValue : Array(pagination.rowsPerPage).fill({}) "
+      :rows="rowsValue != null ? rowsValue : [] "
       :columns="columns"
       color="primary"
       :loading="rowsValue == null"
@@ -448,7 +448,7 @@ export default {
   data () {
     const $q = useQuasar()
     this.pagination = {
-      rowsPerPage: this.initRowsPerPage == null ? 10 : this.initRowsPerPage,
+      rowsPerPage: 100,
       page: 1
     }
 
@@ -531,7 +531,7 @@ export default {
       } else {
         this.pagination = {
           rowsNumber: this.totalRecords,
-          rowsPerPage: this.initRowsPerPage == null ? 10 : this.initRowsPerPage,
+          rowsPerPage: 100,
           page: 1
         }
       }
