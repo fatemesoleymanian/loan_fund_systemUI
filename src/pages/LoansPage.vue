@@ -166,7 +166,7 @@ import { ref } from 'vue';
 import StepOne from 'src/components/GrantLoan/StepOne.vue';
 import CustomeTable from 'src/components/CustomeTable.vue';
 import CardPanel from 'src/components/CardPanel.vue';
-import { getJalaliDate, gregorianToJalali, jalaliToGregorian } from 'src/helpers/dateOutputs';
+import { getJalaliDateSeperately } from 'src/helpers/dateOutputs';
 import { accountsList, fundAccountList } from 'src/helpers/statics';
 import StepTwo from 'src/components/GrantLoan/StepTwo.vue';
 import StepThree from 'src/components/GrantLoan/StepThree.vue';
@@ -280,7 +280,7 @@ const columns = [
 export default {
 
   setup () {
-    const {year , month , day} = getJalaliDate()
+    const {year , month , day} = getJalaliDateSeperately()
     return {
         loanSummation:ref([]),
         filter:ref({

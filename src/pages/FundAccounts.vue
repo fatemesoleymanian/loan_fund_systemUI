@@ -250,7 +250,7 @@
                    v-model="accountInstance.name"/>
                 </div>
                 <div class="col-12 col-sm-6">
-                  موجودی : {{ accountInstance.balance }}<br>
+                  موجودی : {{ formatPriceWithWords(accountInstance.balance) }}<br>
                   مجموع کارمزد (درآمد) : {{ accountInstance.fees}}<br>
                   موجودی کل : {{ accountInstance.total_balance }}<br>
                   هزینه : {{ accountInstance.expenses }}
@@ -366,6 +366,7 @@ import CustomeTable from 'src/components/CustomeTable.vue';
 import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
 import { accountsList, fundAccountList, fundAccTypeList } from 'src/helpers/statics';
+import { formatPriceWithWords } from 'src/functions/tripleSplitterForNumbers';
 const assestColumns = [
 {
     name: 'id',

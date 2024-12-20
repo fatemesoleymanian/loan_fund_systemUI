@@ -36,12 +36,14 @@ export function prependZeroIfSingleChar(inputString) {
     return inputString
   }
 }
-// utils/numberFormatter.js
-export function formatPrice(value) {
-  if (!value) return '0';
-  return new Intl.NumberFormat('en-US').format(value);
+
+import { addCommas, numberToWords } from 'persian-tools2';
+
+export function formatPriceWithWords(value) {
+  if (!value) return '۰ ریال';
+
+  const formattedNumber = addCommas(value); // Add commas
+  const words = numberToWords(value); // Convert to Persian words
+
+  return `${words} ریال (${formattedNumber} ریال)`;
 }
-// export function formatPrice(value) {
-//   if (!value) return '0';
-//   return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-// }

@@ -78,6 +78,7 @@
 import { ref } from 'vue';
 import SelectionInput from '../SelectionInput.vue';
 import { api } from 'src/boot/axios';
+import { addDaysToJalaliDate, getJalaliDate } from 'src/helpers/dateOutputs';
 export default{
   components:{
     SelectionInput
@@ -96,10 +97,12 @@ export default{
       loans,
       account,
       loanInstance:ref({})
-    }
+        }
   },
   data(){
     this.getLoans()
+    this.account.granted_at = getJalaliDate()
+
   },
   methods:{
     async getLoans(){
@@ -120,6 +123,8 @@ export default{
       this.account.description = this.loanInstance.title
       // this.account.fee_amount =  this.loanInstance.static_fee + ((this.loanInstance.fee_percent * this.account.amount)/100);
       this.setLoan('loan_id',event.value)
+      this.account.payback_at = addDaysToJalaliDate(getJalaliDate(),parseInt(this.loanInstance.installment_interval))
+
     },
     goNextStep(){
       this.account.step = 3
