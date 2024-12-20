@@ -1,8 +1,6 @@
 <template>
   <q-page class="style">
-    دفتر روزانه:
-           (پرداخت وام - کارمزد - اقساط - ماهیانه - )تست کن ببین ماهیانه و اقساط که پرداخت میکنی میفته تو تراکنش ها یا نه
-          <br>
+
     <div class="row justify-center text-black h2">مدیریت حساب های صندوق</div>
     <div class="row">
       <div class="col-8">
@@ -217,11 +215,14 @@
               <template v-slot:row-created_at="{ row }">
                     <div class="h5">{{row.created_at }}</div>
                   </template>
-                  <template v-slot:row-fund_account_id="{ row }">
+                  <!-- <template v-slot:row-fund_account_id="{ row }">
                     <div class="h4-5">{{row.type === 'پرداخت وام' || row.type === 'پرداخت قسط' ? 'صندوق':row.account_id }}</div>
-                  </template>
+                  </template> -->
                   <template v-slot:row-account_id="{ row }">
-                    <div class="h4-5">{{row.type === 'پرداخت کارمزد' || row.type === 'پرداخت ماهیانه' ? 'صندوق':row.account_id }}</div>
+                    <div class="h4-5">{{row.account_id }} - {{ row.account_name }}</div>
+                  </template>
+                  <template v-slot:row-type="{ row }">
+                    <div class="h4">{{row.type }}</div>
                   </template>
           </CustomeTable>
           <div class="row q-pa-sm justify-center">
@@ -249,10 +250,10 @@
                    v-model="accountInstance.name"/>
                 </div>
                 <div class="col-12 col-sm-6">
-                  موجودی : {{ formatPrice(accountInstance.balance) }}<br>
-                  مجموع کارمزد (درآمد) : {{ formatPrice(accountInstance.fees)}}<br>
-                  موجودی کل : {{ formatPrice(accountInstance.total_balance) }}<br>
-                  هزینه : {{ formatPrice(accountInstance.expenses) }}
+                  موجودی : {{ accountInstance.balance }}<br>
+                  مجموع کارمزد (درآمد) : {{ accountInstance.fees}}<br>
+                  موجودی کل : {{ accountInstance.total_balance }}<br>
+                  هزینه : {{ accountInstance.expenses }}
 
                 </div>
               </div>
@@ -365,8 +366,6 @@ import CustomeTable from 'src/components/CustomeTable.vue';
 import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
 import { accountsList, fundAccountList, fundAccTypeList } from 'src/helpers/statics';
-import SelectionInput from 'src/components/SelectionInput.vue';
-import { formatPrice } from 'src/functions/tripleSplitterForNumbers';
 const assestColumns = [
 {
     name: 'id',
@@ -542,13 +541,13 @@ const transactionsColumns = [
   },
   {
     name: 'fund_account_id',
-    label: 'حساب بستانکار',
+    label: 'حساب صندوق',
     field: 'fund_account_id',
     disable_search: true,
   },
   {
     name: 'account_id',
-    label: 'حساب بدهکار',
+    label: 'شماره حساب ',
     field: 'account_id',
     disable_search: true,
   },

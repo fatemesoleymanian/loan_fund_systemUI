@@ -238,8 +238,8 @@
 
       <!-- payment  -->
       <q-dialog v-model="paymentDialog" >
-        <card-panel ref="paymentDialogRef" :title="` پرداخت  ${paymentInstance.type === 1 ? 'ماهیانه' : 'قسط'}`" size="60%"
-        :hide_transaction="true" >
+        <card-panel ref="paymentDialogRef" :title="` پرداخت  ${paymentInstance.type === '1' ? 'ماهیانه' : 'قسط'}`" size="60%"
+        :hide_actions="true" >
         <template #card-sections>
         <q-card-section class="row items-center q-pb-none" >
           <q-space />
@@ -632,6 +632,7 @@ export default {
     console.log(res.data)
       this.$emit('on-notify',res.data.msg)
       this.applyChargeDialog = false
+      this.$refs.table.getRows()
 
     }).catch(error=>{
         alert(error.response.data.message)

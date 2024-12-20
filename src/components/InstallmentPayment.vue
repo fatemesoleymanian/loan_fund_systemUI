@@ -42,7 +42,7 @@
             تاخیر : {{ payment.delay_days }}
           </div>
 
-        <div class="col-6 " v-if="payment.type === 2">
+        <div class="col-6 " v-if="payment.type == 2">
           <q-input label="شماره وام" v-model="payment.loan_account_id" class="style" outlined dense />
         </div>
 
@@ -52,10 +52,10 @@
         @on-update-model="payment.fund_account_id = $event.value"
         label="حساب" />
     </div>
-    <div>
+    <div class="text-center items-center justify-center">
       <q-btn label="پرداخت" unelevated color="primary" class="col-6 style col-sm-3" style="max-width: 200px;"
        @click="doPayment"
-      v-if="payment.fund_account_id == null"/>
+      v-if="payment.fund_account_id != null"/>
       <q-btn unelevated  label="لغو" outline color="negative"
       class="col-6 style font-demi-bold col-sm-3" style="max-width: 200px;" v-close-popup/>
     </div>
@@ -96,7 +96,7 @@ export default{
     },
     async setAccount(){
       api.get(`account/${this.payment.account_id}`).then(res=>{
-          this.account = res.data
+          this.account = res.data.account
       })
     }
   },
