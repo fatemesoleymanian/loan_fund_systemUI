@@ -22,6 +22,7 @@
                    v-model="account.amount"
                    suffix="ریال"
                    @update:model-value="account.fee_amount=Number(Number(loanInstance.static_fee) + ((Number(loanInstance.fee_percent) * $event)/100))"/>
+                   {{ formatCurrencyy(account.amount) }}
                    <div v-if="loanInstance.max_amount >0 && Number(loanInstance.max_amount)<=Number(account.amount)" class="text-negative text-center items-center" style="text-decoration: underline;">سقف وام : {{ loanInstance.max_amount }}</div>
           </div>
           <div class="col-6  ">
@@ -51,6 +52,7 @@
                   placeholder="مبلغ کارمزد"
                    v-model="account.fee_amount"
                    suffix="ریال"/>
+                   {{ formatCurrencyy(account.fee_amount) }}
                    است.
             </div>
             <div class="col-6 ">
@@ -79,6 +81,7 @@ import { ref } from 'vue';
 import SelectionInput from '../SelectionInput.vue';
 import { api } from 'src/boot/axios';
 import { addDaysToJalaliDate, getJalaliDate } from 'src/helpers/dateOutputs';
+import { formatCurrency } from 'src/functions/tripleSplitterForNumbers';
 export default{
   components:{
     SelectionInput
@@ -105,6 +108,9 @@ export default{
 
   },
   methods:{
+    formatCurrencyy(num){
+      return formatCurrency(num)
+    },
     async getLoans(){
       await api.get('loan').then(res=>{
         res.data.loans.forEach(loan=>{

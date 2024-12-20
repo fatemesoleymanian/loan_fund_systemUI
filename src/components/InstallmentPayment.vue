@@ -10,7 +10,7 @@
             نام حساب : {{account.member_name}}
             </div>
           <div class="col-6 q-pa-sm h4 font-bold">
-            موجودی : {{ account.balance }}
+            موجودی : {{ formatCurrencyy(account.balance) }}
           </div>
           <div class="col-6 q-pa-sm h4 ">
             عضویت : {{account.stock_units}} سهمی
@@ -30,6 +30,7 @@
                   placeholder="مبلغ قسط "
                    v-model="payment.amount"
                    suffix="ریال"/>
+                   {{formatCurrencyy(payment.amount)}}
           </div>
           <div class="col-6 ">
             <q-input type="text"

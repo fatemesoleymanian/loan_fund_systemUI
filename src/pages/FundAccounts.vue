@@ -53,16 +53,16 @@
 
               </div>
               <div class="col-12 q-pa-sm">
-            موجودی : {{ current_acc.data.balance }}
+            موجودی : {{ formatCurrencyy(current_acc.data.balance) }}
             </div>
             <div class="col-12 q-pa-sm">
-           مجموع کارمزد (درآمد) : {{ current_acc.data.fees }}
+           مجموع کارمزد (درآمد) : {{ formatCurrencyy(current_acc.data.fees) }}
             </div>
             <div class="col-12 q-pa-sm">
-           هزینه : {{ current_acc.data.expenses }}
+           هزینه : {{ formatCurrencyy(current_acc.data.expenses) }}
             </div>
             <div class="col-12 q-pa-sm">
-           موجودی کل : {{ current_acc.data.total_balance }}
+           موجودی کل : {{ formatCurrencyy(current_acc.data.total_balance) }}
             </div>
             <div class="col-12 q-pa-sm">
            وضعیت : {{ current_acc.data.status }}
@@ -98,10 +98,13 @@
               <template v-slot:row-created_at="{ row }">
                     <div class="h5">{{row.created_at }}</div>
                   </template>
+                  <template v-slot:row-cost="{ row }">
+                    <div class="h4">{{formatCurrencyy(row.cost) }}</div>
+                  </template>
           </CustomeTable>
           <div class="row q-pa-sm justify-center">
-            <div class="col-6">مجموع هزینه اثاثیه : {{ costs }} ریال</div>
-            <div class="col-6">مجموع هزینه ها  : {{ current_acc.data.expenses }} ریال</div>
+            <div class="col-6">مجموع هزینه اثاثیه : {{ formatCurrencyy(costs) }} </div>
+            <div class="col-6">مجموع هزینه ها  : {{ formatCurrencyy(current_acc.data.expenses) }} </div>
           </div>
           </q-tab-panel>
           <q-tab-panel name="charity">
@@ -132,10 +135,13 @@
               <template v-slot:row-created_at="{ row }">
                     <div class="h5">{{row.created_at }}</div>
                   </template>
+                  <template v-slot:row-amount="{ row }">
+                    <div class="h4">{{formatCurrencyy(row.amount) }}</div>
+                  </template>
           </CustomeTable>
           <div class="row q-pa-sm justify-center">
-            <div class="col-6">مجموع هزینه هزینه : {{ costs }} ریال</div>
-            <div class="col-6">مجموع هزینه ها  : {{ current_acc.data.expenses }} ریال</div>
+            <div class="col-6">مجموع هزینه هزینه : {{ formatCurrencyy(costs) }} </div>
+            <div class="col-6">مجموع هزینه ها  : {{ formatCurrencyy(current_acc.data.expenses) }} </div>
           </div>
           </q-tab-panel>
           <q-tab-panel name="todayReport">
@@ -167,9 +173,12 @@
               <template v-slot:row-created_at="{ row }">
                     <div class="h5">{{row.created_at }}</div>
                   </template>
+                  <template v-slot:row-amount="{ row }">
+                    <div class="h4">{{formatCurrencyy(row.amount) }}</div>
+                  </template>
           </CustomeTable>
           <div class="row q-pa-sm justify-center">
-            <div class="col-12">مجموع واریزی ها : {{ depositsSummation }} ریال</div>
+            <div class="col-12">مجموع واریزی ها : {{ formatCurrencyy(depositsSummation) }} </div>
           </div>
           </q-tab-panel>
           <q-tab-panel name="withdraws">
@@ -191,9 +200,12 @@
               <template v-slot:row-created_at="{ row }">
                     <div class="h5">{{row.created_at }}</div>
                   </template>
+                  <template v-slot:row-amount="{ row }">
+                    <div class="h4">{{formatCurrencyy(row.amount) }}</div>
+                  </template>
           </CustomeTable>
           <div class="row q-pa-sm justify-center">
-            <div class="col-12">مجموع برداشت ها : {{ withdrawsSummation }} ریال</div>
+            <div class="col-12">مجموع برداشت ها : {{ formatCurrencyy(withdrawsSummation) }} </div>
           </div>
           </q-tab-panel>
           <q-tab-panel name="transactions">
@@ -215,6 +227,9 @@
               <template v-slot:row-created_at="{ row }">
                     <div class="h5">{{row.created_at }}</div>
                   </template>
+                  <template v-slot:row-amount="{ row }">
+                    <div class="h4">{{formatCurrencyy(row.amount) }}</div>
+                  </template>
                   <!-- <template v-slot:row-fund_account_id="{ row }">
                     <div class="h4-5">{{row.type === 'پرداخت وام' || row.type === 'پرداخت قسط' ? 'صندوق':row.account_id }}</div>
                   </template> -->
@@ -226,7 +241,7 @@
                   </template>
           </CustomeTable>
           <div class="row q-pa-sm justify-center">
-            <div class="col-12">مجموع مبالغ : {{ transactionsSummation }} ریال</div>
+            <div class="col-12">مجموع مبالغ : {{ formatCurrencyy(transactionsSummation) }} </div>
           </div>
           </q-tab-panel>
           </q-tab-panels>
@@ -250,10 +265,10 @@
                    v-model="accountInstance.name"/>
                 </div>
                 <div class="col-12 col-sm-6">
-                  موجودی : {{ formatPriceWithWords(accountInstance.balance) }}<br>
-                  مجموع کارمزد (درآمد) : {{ accountInstance.fees}}<br>
-                  موجودی کل : {{ accountInstance.total_balance }}<br>
-                  هزینه : {{ accountInstance.expenses }}
+                  موجودی : {{ formatCurrencyy(accountInstance.balance) }}<br>
+                  مجموع کارمزد (درآمد) : {{ formatCurrencyy(accountInstance.fees)}}<br>
+                  موجودی کل : {{ formatCurrencyy(accountInstance.total_balance) }}<br>
+                  هزینه : {{ formatCurrencyy(accountInstance.expenses) }}
 
                 </div>
               </div>
@@ -282,6 +297,7 @@
                 placeholder="هزینه"
                 hint="هزینه"
                 v-model="assetInstance.cost"/>
+                {{ formatCurrencyy(assetInstance.cost) }}
                 </div>
                 <div class="col-12 col-sm-6">
                   <q-input type="text" class="style" outlined dense hint="توضیحات اضافی"
@@ -328,6 +344,7 @@
                 placeholder="هزینه"
                 hint="هزینه"
                 v-model="charityInstance.amount"/>
+                {{ formatCurrencyy(charityInstance.amount) }}
                 </div>
                 <div class="col-12 col-sm-6">
                   <q-input type="text" class="style" outlined dense hint="توضیحات اضافی"
@@ -366,7 +383,7 @@ import CustomeTable from 'src/components/CustomeTable.vue';
 import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
 import { accountsList, fundAccountList, fundAccTypeList } from 'src/helpers/statics';
-import { formatPriceWithWords } from 'src/functions/tripleSplitterForNumbers';
+import { formatCurrency } from 'src/functions/tripleSplitterForNumbers';
 const assestColumns = [
 {
     name: 'id',
@@ -644,8 +661,11 @@ export default {
     this.onAfterLoaded()
     },
   methods:{
+    formatCurrencyy(num){
+      return formatCurrency(num)
+    },
     tabUpdated(tab){
-      console.log(tab)
+      // console.log(tab)
       this.searchQuery = ''
       this.filter.from = ''
       this.filter.to = ''

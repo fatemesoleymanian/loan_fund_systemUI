@@ -1,3 +1,4 @@
+
 /* eslint-disable space-before-function-paren */
 export const makeTripple = {
   splitEvery3(number) {
@@ -37,13 +38,9 @@ export function prependZeroIfSingleChar(inputString) {
   }
 }
 
-import { addCommas, numberToWords } from 'persian-tools2';
-
-export function formatPriceWithWords(value) {
-  if (!value) return '۰ ریال';
-
-  const formattedNumber = addCommas(value); // Add commas
-  const words = numberToWords(value); // Convert to Persian words
-
-  return `${words} ریال (${formattedNumber} ریال)`;
+export function  formatCurrency(number) {
+  return new Intl.NumberFormat('fa-IR', {
+    style: 'currency',
+    currency: 'IRR',
+  }).format(number || 0);
 }

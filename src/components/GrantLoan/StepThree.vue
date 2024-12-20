@@ -24,7 +24,7 @@
                       <tbody>
                         <tr  v-for="(d,i) in installments" :key="i">
                           <td>{{ d.inst_number}}</td>
-                          <td>{{ d.amount}}</td>
+                          <td>{{ formatCurrencyy(d.amount)}}</td>
                           <td>{{ d.due_date}}</td>
                         </tr>
                       </tbody>
@@ -45,6 +45,7 @@ import { ref } from 'vue';
 import SelectionInput from '../SelectionInput.vue';
 import { api } from 'src/boot/axios';
 import { inject } from 'vue';
+import { formatCurrency } from 'src/functions/tripleSplitterForNumbers';
 export default{
   components:{
     SelectionInput
@@ -73,6 +74,9 @@ export default{
     }
   },
   methods:{
+    formatCurrencyy(num){
+      return formatCurrency(num)
+    },
     askForPartition(){
       this.onOkDialog({
         message:` آیا از ${this.no_need_to_pay ? 'ثبت' :'قسط بندی'} اطمینان دارید؟`,

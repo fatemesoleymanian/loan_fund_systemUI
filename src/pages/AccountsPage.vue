@@ -42,6 +42,9 @@
               <template v-slot:row-created_at="{ row }">
                 <div class="h5">{{row.created_at }}</div>
               </template>
+              <template v-slot:row-balance="{ row }">
+                <div class="h4">{{formatCurrencyy(row.balance) }}</div>
+              </template>
               <template v-slot:row-is_open="{ row }">
                 <div class="h4">{{row.is_open === '1' ? 'باز':' بسته شده' }}</div>
               </template>
@@ -170,6 +173,8 @@
                       <div class="col-6 h4">موجودی : {{ accountInstance.balance }}</div>
                       <div class="col-6 h4-5">وضعیت حساب : {{ accountInstance.status }}</div>
                     </div>
+                    {{formatCurrencyy(accountInstance.balance)}}
+
                 </div>
 
                 <div class="col-12 col-sm-6">
@@ -202,7 +207,7 @@
                  نام حساب : {{accountInstance.full_name}}
                 </div>
               <div class="col-6 font-demi-bold">
-                موجودی : {{ transactionInstance.balance }}
+                موجودی : {{ formatCurrencyy(transactionInstance.balance) }}
               </div>
               <div class="col-6 ">
                  عضویت : {{accountInstance.stock_units}} سهمی
@@ -227,7 +232,7 @@
                         <tr  v-for="(d,i) in accountInstance.deposits" :key="i">
                           <td>{{ d.created_at}}</td>
                           <td>صندوق </td>
-                          <td>{{ d.amount }}</td>
+                          <td>{{ formatCurrencyy(d.amount) }}</td>
                           <td>{{ d.description }}</td>
                         </tr>
                       </tbody>
@@ -240,6 +245,7 @@
                   <q-input type="number" min="0" class="style" outlined dense hint="مبلغ"
                   placeholder="مبلغ"
                    v-model="transactionInstance.amount"/>
+                   {{ formatCurrencyy(transactionInstance.amount) }}
                 </div>
                 <div class="col-12 ">
                   <q-input type="textarea" class="style" outlined dense hint="توضیح"
@@ -265,7 +271,7 @@
                  نام حساب : {{accountInstance.full_name}}
                 </div>
               <div class="col-6 font-bold">
-                موجودی : {{ transactionInstance.balance }}
+                موجودی : {{ formatCurrencyy(transactionInstance.balance) }}
               </div>
               <div class="col-6 ">
                  عضویت : {{accountInstance.stock_units}} سهمی
@@ -291,7 +297,7 @@
                         <tr  v-for="(d,i) in accountInstance.withdraws" :key="i">
                           <td>{{ d.created_at}}</td>
                           <td>صندوق </td>
-                          <td>{{ d.amount }}</td>
+                          <td>{{ formatCurrencyy(d.amount) }}</td>
                           <td>{{ d.description }}</td>
                         </tr>
                       </tbody>
@@ -304,6 +310,7 @@
                   <q-input type="number" min="0" class="style" outlined dense hint="مبلغ"
                   placeholder="مبلغ"
                    v-model="transactionInstance.amount"/>
+                   {{formatCurrencyy(transactionInstance.amount)}}
                 </div>
                 <div class="col-12 ">
                   <q-input type="textarea" class="style" outlined dense hint="توضیح"
@@ -327,6 +334,7 @@ import { api } from 'src/boot/axios';
 import CardPanel from 'src/components/CardPanel.vue';
 import {  getJalaliDateSeperately } from 'src/helpers/dateOutputs';
 import { accountStatus } from 'src/helpers/statics';
+import { formatCurrency } from 'src/functions/tripleSplitterForNumbers';
 const columns = [
   {
     name: 'id',
@@ -431,6 +439,9 @@ export default {
     }
     },
   methods:{
+    formatCurrencyy(num){
+      return formatCurrency(num)
+    },
   reloadTable(){
     setTimeout(()=>{this.$refs.table.getRows()},1)
   },

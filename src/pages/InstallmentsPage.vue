@@ -46,6 +46,9 @@
               <template v-slot:row-type="{ row }">
                 <div class="h4-5">{{row.type === '1' ? 'ماهیانه' : 'وام'}}</div>
               </template>
+              <template v-slot:row-amount="{ row }">
+                <div class="h4">{{formatCurrencyy(row.amount)}}</div>
+              </template>
               <template v-slot:row-actions="{ row }">
                 <q-btn icon="more_horiz" class="action-btn" size="xs" rounded dense outline unelevated
                   color="primary" v-if="row.is_paid == null">
@@ -87,6 +90,7 @@
                     placeholder="مبلغ"
                     hint="مبلغ"
                     v-model="monthlyChargeInstance.amount"/>
+                    {{ formatCurrencyy(monthlyChargeInstance.amount) }}
                 </div>
                 <div class="col-12 col-sm-6">
                   <q-input dense
@@ -132,6 +136,7 @@
                     placeholder="مبلغ"
                     hint="مبلغ"
                     v-model="monthlyChargeInstance.amount"/>
+                    {{ formatCurrencyy(monthlyChargeInstance.amount) }}
                 </div>
                 <div class="col-12 col-sm-6">
                   <q-input dense
@@ -230,7 +235,7 @@
                   </template>
           </CustomeTable>
           <div class="row q-pa-sm justify-center">
-            <div class="col-12">مجموع مبالغ : {{ feesSummation }} ریال</div>
+            <div class="col-12">مجموع مبالغ : {{ feesSummation }} </div>
           </div>
           </template>
         </card-panel>
@@ -266,6 +271,7 @@ import { useRoute } from 'vue-router';
 import { accountsList, fundAccountList } from 'src/helpers/statics';
 import SelectionInput from 'src/components/SelectionInput.vue';
 import InstallmentPayment from 'src/components/InstallmentPayment.vue';
+import { formatCurrency } from 'src/functions/tripleSplitterForNumbers';
 const columns = [
   {
     name: 'inst_number',
@@ -506,6 +512,9 @@ export default {
 
     },
   methods:{
+    formatCurrencyy(num){
+      return formatCurrency(num)
+    },
     reloadPage(){
      window.location.reload()
     },

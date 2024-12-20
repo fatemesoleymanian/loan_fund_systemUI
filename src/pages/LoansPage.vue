@@ -54,8 +54,14 @@
               <template v-slot:row-created_at="{ row }">
                 <div class="h4-5">{{row.created_at }}</div>
               </template>
+              <template v-slot:row-amount="{ row }">
+                <div class="h4">{{formatCurrencyy(row.amount) }}</div>
+              </template>
+              <template v-slot:row-paid_amount="{ row }">
+                <div class="h4">{{formatCurrencyy(row.paid_amount) }}</div>
+              </template>
               <template v-slot:row-granted_at="{ row }">
-                <div>{{row.amount - row.paid_amount }}</div>
+                <div>{{formatCurrencyy(row.amount - row.paid_amount) }}</div>
               </template>
             </CustomeTable>
             <div class="q-px-md q-py-sm font-demi-bold row">
@@ -63,7 +69,7 @@
               مجموع مانده وام : {{ loanSummation[1] }}
             </div>
             <div class="col-6">
-              مجموع مبلغ وام: {{ loanSummation[0] }}
+              مجموع مبلغ وام: {{ formatCurrencyy(loanSummation[0]) }}
               </div>
           </div>
 
@@ -171,6 +177,7 @@ import { accountsList, fundAccountList } from 'src/helpers/statics';
 import StepTwo from 'src/components/GrantLoan/StepTwo.vue';
 import StepThree from 'src/components/GrantLoan/StepThree.vue';
 import { api } from 'src/boot/axios';
+import { formatCurrency } from 'src/functions/tripleSplitterForNumbers';
 const columns = [
   {
     name: 'id',
@@ -335,6 +342,9 @@ export default {
 
     },
   methods:{
+    formatCurrencyy(num){
+      return formatCurrency(num)
+    },
     showInstallments(loan){
         this.$router.push(`/installments?loan_account_id=${loan.id}`)
       },

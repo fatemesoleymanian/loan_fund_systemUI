@@ -15,7 +15,7 @@
             نام حساب : {{selectedAccount.member_name}}
             </div>
           <div class="col-6 q-pa-sm h4 font-bold">
-            موجودی : {{ selectedAccount.balance }}
+            موجودی : {{ formatCurrencyy(selectedAccount.balance) }}
           </div>
           <div class="col-6 q-pa-sm h4 ">
             عضویت : {{selectedAccount.stock_units}} سهمی
@@ -45,7 +45,7 @@
                           <td>{{ d.id}}</td>
                           <td>{{ d.created_at}}</td>
                           <td>{{ d.payback_at}}</td>
-                          <td>{{ d.amount}}</td>
+                          <td>{{ formatCurrencyy(d.amount)}}</td>
                           <td>{{ d.number_of_installments}}</td>
                           <td>{{ d.no_of_paid_inst}}</td>
                           <td>{{ d.amount - d.paid_amount}}</td>
@@ -67,6 +67,7 @@
 import { inject, ref } from 'vue'
 import SelectionInput from '../SelectionInput.vue';
 import { api } from 'src/boot/axios';
+import { formatCurrency } from 'src/functions/tripleSplitterForNumbers';
 export default {
 props: {
   instance:{
@@ -93,6 +94,9 @@ return {
 }
 },
 methods:{
+  formatCurrencyy(num){
+      return formatCurrency(num)
+    },
   async checkForUnpaidInstallments(account){
     this.account.account_id = account.value
     this.account.account_name = account.data.member_name
