@@ -78,7 +78,7 @@ const linksList = [
   {
     title: 'مدیریت حساب ها',
     icon: 'rss_feed',
-    link: '#/'
+    link: '#/fund'
   }
 ]
 

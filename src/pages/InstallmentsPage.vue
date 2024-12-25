@@ -46,6 +46,9 @@
               <template v-slot:row-type="{ row }">
                 <div class="h4-5">{{row.type === '1' ? 'ماهیانه' : 'وام'}}</div>
               </template>
+              <template v-slot:row-delay_days="{ row }">
+                <div class="h4-5" :style="`${row.delay_days > 0 ? 'color:#C10015;':''}`">{{ row.delay_days}}</div>
+              </template>
               <template v-slot:row-amount="{ row }">
                 <div class="h4">{{formatCurrencyy(row.amount)}}</div>
               </template>

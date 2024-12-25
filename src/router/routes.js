@@ -1,14 +1,14 @@
 const routes = [
-  // {
-  //   path: '/',
-  //   component: () => import('layouts/Login-Signup.vue'),
-  //   name: 'Login'
-  // },
+  {
+    path: '/',
+    component: () => import('../layouts/LoginSignup.vue'),
+    name: 'Login'
+  },
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('src/pages/FundAccounts.vue') },
+      { path: 'fund', component: () => import('src/pages/FundAccounts.vue') },
       { path: 'loans', component: () => import('src/pages/LoansPage.vue') },
       { path: 'members', component: () => import('src/pages/MembersPage.vue') },
       { path: 'installments', component: () => import('src/pages/InstallmentsPage.vue') },
