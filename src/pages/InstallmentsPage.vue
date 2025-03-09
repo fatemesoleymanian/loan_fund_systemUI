@@ -1,6 +1,5 @@
 <template>
   <q-page class="style">
-    آپدیت دیلی دیز
     <div class="row justify-center text-black h2">قسط و ماهیانه ها</div>
     <div class="row q-pa-md text-center justify-between">
     <q-input label="شماره حساب" v-model="filter.account_id"  dense  type="text" class="style" outlined/>

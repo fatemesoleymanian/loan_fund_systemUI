@@ -1,6 +1,5 @@
 <template>
   <q-page class="style">
-    کامله فقط اقساط روتش درست نیس
     <div class="row justify-center text-black h2">حساب ها</div>
 
    <div class="row text-center items-center" >
