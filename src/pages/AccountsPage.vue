@@ -573,7 +573,7 @@ export default {
       }).catch(error=>{
         if(error.status == 400){
           alert(error.response.data.msg)
-          this.showInstallments(account.id)
+          this.showInstallments(account)
         }else alert(error.response.data.msg)
       })
         }
