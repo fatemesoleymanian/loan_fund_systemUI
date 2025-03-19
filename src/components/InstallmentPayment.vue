@@ -67,6 +67,7 @@
 import { ref } from 'vue';
 import SelectionInput from './SelectionInput.vue';
 import { api } from 'src/boot/axios';
+import { formatCurrency } from 'src/functions/tripleSplitterForNumbers';
 
 export default{
   props:{
@@ -92,6 +93,9 @@ export default{
     this.setAccount()
   },
   methods:{
+    formatCurrencyy(num){
+      return formatCurrency(num)
+    },
     doPayment(){
       this.$emit('on-pay',this.payment)
     },
