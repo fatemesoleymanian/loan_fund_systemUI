@@ -34,10 +34,20 @@
               label: 'کارمزد',
              emit: 'on-show-fees'
             },
+            {
+              label: 'ارسال پیام دیرکرد',
+             emit: 'on-send-latency-sms'
+            },
+            {
+              label: 'ارسال پیام یادآوری',
+             emit: 'on-send-reminder-sms'
+            },
           ]"
           @on-init-charge="monthlyChargeInstance={ id: null,amount: 0,year: year,title: '',accounts:[]};monthlyChargeInfoDialog = true"
           @on-apply-charge="getCharges();onAfterLoaded([]);applyChargeDialog=true;"
           @on-show-fees="showFees"
+          @on-send-latency-sms="sendLatencySms"
+          @on-send-reminder-sms="sendReminderSms"
           :columns="columns">
           <template v-slot:row-created_at="{ row }">
                 <div class="h5">{{row.created_at }}</div>
@@ -259,6 +269,7 @@
             </template>
             </card-panel>
             </q-dialog>
+
   </q-page>
 </template>
 
@@ -621,6 +632,36 @@ export default {
   },
   showFees(){
     this.showFeesDialog = true
+  },
+  sendReminderSms(){
+    this.$emit('on-ok-dialog', {
+        message: `آیا میخواهید برای عضوهایی که بزودی سررسید قسط دارند پیامی ارسال کنید؟`,
+        icon: 'warning',
+        color: 'warning',
+        textColor: 'white',
+        onOk: async () => {
+          await api.get('installment/reminder_sms').then(res=>{
+        alert('با موفقیت ارسال شد.')
+      }).catch(error=>{
+        alert(error.response.data.message)
+      })
+        }
+      })
+  },
+  sendLatencySms(){
+    this.$emit('on-ok-dialog', {
+        message: `آیا میخواهید برای عضوهایی که در پرداخت قسط تاخیر داشته اند پیامی ارسال کنید؟`,
+        icon: 'warning',
+        color: 'warning',
+        textColor: 'white',
+        onOk: async () => {
+          await api.get('installment/latency_sms').then(res=>{
+        alert('با موفقیت ارسال شد.')
+      }).catch(error=>{
+        alert(error.response.data.message)
+      })
+        }
+      })
   },
   checkCharges(){
     this.monthlyChargeInstance.accounts = [...new Set(this.monthlyChargeInstance.accounts)]
