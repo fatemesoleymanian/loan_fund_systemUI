@@ -35,8 +35,12 @@
              emit: 'on-show-fees'
             },
             {
-              label: 'ارسال پیام دیرکرد',
-             emit: 'on-send-latency-sms'
+              label: 'ارسال پیام دیرکرد ماهیانه',
+             emit: 'on-send-latency-sms1'
+            },
+            {
+              label: 'ارسال پیام دیرکرد قسط',
+             emit: 'on-send-latency-sms2'
             },
             {
               label: 'ارسال پیام یادآوری',
@@ -46,7 +50,8 @@
           @on-init-charge="monthlyChargeInstance={ id: null,amount: 0,year: year,title: '',accounts:[]};monthlyChargeInfoDialog = true"
           @on-apply-charge="getCharges();onAfterLoaded([]);applyChargeDialog=true;"
           @on-show-fees="showFees"
-          @on-send-latency-sms="sendLatencySms"
+          @on-send-latency-sms1="sendLatencySms1"
+          @on-send-latency-sms2="sendLatencySms2"
           @on-send-reminder-sms="sendReminderSms"
           :columns="columns">
           <template v-slot:row-created_at="{ row }">
@@ -648,14 +653,29 @@ export default {
         }
       })
   },
-  sendLatencySms(){
+  sendLatencySms1(){
+    this.$emit('on-ok-dialog', {
+        message: `آیا میخواهید برای عضوهایی که در پرداخت ماهیانه تاخیر داشته اند پیامی ارسال کنید؟`,
+        icon: 'warning',
+        color: 'warning',
+        textColor: 'white',
+        onOk: async () => {
+          await api.get('installment/latency_sms1').then(res=>{
+        alert('با موفقیت ارسال شد.')
+      }).catch(error=>{
+        alert(error.response.data.message)
+      })
+        }
+      })
+  },
+  sendLatencySms2(){
     this.$emit('on-ok-dialog', {
         message: `آیا میخواهید برای عضوهایی که در پرداخت قسط تاخیر داشته اند پیامی ارسال کنید؟`,
         icon: 'warning',
         color: 'warning',
         textColor: 'white',
         onOk: async () => {
-          await api.get('installment/latency_sms').then(res=>{
+          await api.get('installment/latency_sms2').then(res=>{
         alert('با موفقیت ارسال شد.')
       }).catch(error=>{
         alert(error.response.data.message)
