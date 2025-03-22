@@ -43,7 +43,7 @@
              emit: 'on-send-latency-sms2'
             },
             {
-              label: 'ارسال پیام یادآوری',
+              label: 'ارسال پیام یادآوری قسط',
              emit: 'on-send-reminder-sms'
             },
           ]"
