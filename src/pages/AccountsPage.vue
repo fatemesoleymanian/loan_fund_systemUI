@@ -37,7 +37,13 @@
                   icon: 'add'
               }"
           @on-add-button="resetInstance();accountInfoDialog = true"
-          :columns="columns">
+          :columns="columns"
+          :extra_buttons="[
+            {
+              label: 'ارسال پیامک به اعضا',
+             emit: 'on-send-sms-with-custom-message'
+            }]"
+            @on-send-sms-with-custom-message="smsObject={receptors:[],message:''};sendSmsWithCustomMessageDialog=true;">
               <template v-slot:row-created_at="{ row }">
                 <div class="h5">{{row.created_at }}</div>
               </template>
@@ -320,6 +326,33 @@
           </template>
         </card-panel>
       </q-dialog>
+      <q-dialog v-model="sendSmsWithCustomMessageDialog" :persistent="true">
+        <card-panel ref="sendSmsWithCustomMessageDialogRef"
+        title="ارسال پیامک به اعضا" size="50%"
+         @on-submit="sendSmsWithCustomMessage"
+         :disableNotify="false"
+        @on-success="sendSmsWithCustomMessageDialog=false;">
+          <template #body>
+
+                <div class="row items-center">
+                  <div class="col-12 ">
+                    <SelectionInput dense
+                    :option-list="accountsList"
+                    :multiple="true"
+                    :multible="true"
+                    @on-update-model="addMemberTosms"
+                    label="حساب" />
+                  </div>
+                <div class="col-12 ">
+                  <q-input type="textarea" class="style" outlined dense hint="متن پیامک"
+                  placeholder="متن پیامک" @blur="addExtraTextToSms"
+                   v-model="smsObject.message"/>
+                </div>
+            </div>
+          </template>
+        </card-panel>
+      </q-dialog>
+
 
 
   </q-page>
@@ -334,6 +367,7 @@ import CardPanel from 'src/components/CardPanel.vue';
 import {  getJalaliDateSeperately } from 'src/helpers/dateOutputs';
 import { accountStatus } from 'src/helpers/statics';
 import { formatCurrency } from 'src/functions/tripleSplitterForNumbers';
+import SelectionInput from 'src/components/SelectionInput.vue';
 const columns = [
   {
     name: 'id',
@@ -389,6 +423,9 @@ export default {
   setup () {
     const {year , month , day} = getJalaliDateSeperately()
     return {
+      accountsList:ref([]),
+      smsObject:ref({receptors:[],message:''}),
+      sendSmsWithCustomMessageDialog:ref(false),
       accountStatus,
       filter:ref({
         id:null,
@@ -438,6 +475,26 @@ export default {
     }
     },
   methods:{
+    addMemberTosms(member){
+      this.smsObject.receptors = []
+      this.smsObject.receptors = member
+    },
+    async sendSmsWithCustomMessage(){
+
+      const receptors = this.smsObject.receptors.map(item => item.value).join(',')
+
+      await api.post('sms/custom_message',{
+        message: this.smsObject.message,
+        receptors
+      }).then(res=>{
+          alert('ارسال شد!')
+      }).catch(error=>{
+        alert(error.response.data.msg)
+      })
+    },
+    addExtraTextToSms(){
+      this.smsObject.message += "\n صندوق خانوادگی سلیمانیان (شهید طایف)\nلغو 11"
+    },
     formatCurrencyy(num){
       return formatCurrency(num)
     },
@@ -490,8 +547,11 @@ export default {
     async onAfterLoaded(rows){
       rows.forEach((row) => {
         row.class = row.is_open === '1' ? '':'opt-5'
+        row.label = row.member_name + "-"+row.id
+        row.value = row.member.mobile_number
       })
       this.$refs.table.setRowsValue(rows)
+      this.accountsList = rows
     },
     addaccount(){
       this.$refs.accountInfoDialogRef.submit({
@@ -610,6 +670,7 @@ export default {
 
   components:{
     CustomeTable,
+    SelectionInput,
     CardPanel
     }
 }
