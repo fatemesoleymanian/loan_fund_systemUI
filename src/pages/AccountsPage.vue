@@ -51,7 +51,7 @@
                 <div class="h4">{{formatCurrencyy(row.balance) }}</div>
               </template>
               <template v-slot:row-is_open="{ row }">
-                <div class="h4">{{row.is_open === '1' ? 'باز':' بسته شده' }}</div>
+                <div class="h4">{{row.is_open == 1 ? 'باز':' بسته شده' }}</div>
               </template>
               <template v-slot:row-stock_units="{ row }">
                 <div v-if="row.stock_units > 0">
@@ -546,7 +546,7 @@ export default {
     },
     async onAfterLoaded(rows){
       rows.forEach((row) => {
-        row.class = row.is_open === '1' ? '':'opt-5'
+        row.class = row.is_open == 1 ? '':'opt-5'
         row.label = row.member_name + "-"+row.id
         row.value = row.member.mobile_number
       })

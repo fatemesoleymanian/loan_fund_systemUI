@@ -1,6 +1,6 @@
 <template>
-  <div class="row items-center bg-white" style="max-height: 100vh!important;height: 100vh;">
-    <div class="col-12 col-sm-6 q-pa-xl" >
+  <div class="row items-center bg-white justify-center" style="max-height: 100vh!important;height: 100vh;">
+    <div class="col-12 col-sm-6 q-pa-xl" style="border: 1px solid gray;border-radius: 10px;">
       <q-form
         @submit="loginSubmit"
         @reset="onReset" class="q-px-lg">
