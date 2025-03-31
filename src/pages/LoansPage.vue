@@ -26,7 +26,7 @@
             {
               label: 'اعطای وام',
              emit: 'on-grant'
-            },
+            }
           ]"
               @summation-after-loaded="loanSummation = $event"
               @on-init-loan="initLoan"

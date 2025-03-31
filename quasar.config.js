@@ -143,18 +143,26 @@ module.exports = configure(function (/* ctx */) {
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
+    // pwa: {
+    //   workboxMode: 'generateSW', // or 'injectManifest'
+    //   injectPwaMetaTags: true,
+    //   swFilename: 'sw.js',
+    //   manifestFilename: 'manifest.json',
+    //   useCredentialsForManifestTag: false,
+    //   // useFilenameHashes: true,
+    //   // extendGenerateSWOptions (cfg) {}
+    //   // extendInjectManifestOptions (cfg) {},
+    //   // extendManifestJson (json) {}
+    //   // extendPWACustomSWConf (esbuildConf) {}
+    // },
     pwa: {
-      workboxMode: 'generateSW', // or 'injectManifest'
-      injectPwaMetaTags: true,
+      workboxMode: 'generateSW', // یا 'injectManifest' در صورت نیاز به کاستومایز
       swFilename: 'sw.js',
       manifestFilename: 'manifest.json',
-      useCredentialsForManifestTag: false,
-      // useFilenameHashes: true,
-      // extendGenerateSWOptions (cfg) {}
-      // extendInjectManifestOptions (cfg) {},
-      // extendManifestJson (json) {}
-      // extendPWACustomSWConf (esbuildConf) {}
+      injectPwaMetaTags: true,
+      useCredentialsForManifestTag: false
     },
+
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova
     cordova: {

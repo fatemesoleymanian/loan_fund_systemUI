@@ -58,7 +58,7 @@
                 <div class="h5">{{row.created_at }}</div>
               </template>
               <template v-slot:row-type="{ row }">
-                <div class="h4-5">{{row.type === '1' ? 'ماهیانه' : 'وام'}}</div>
+                <div class="h4-5">{{row.type === 1 ? 'ماهیانه' : 'وام'}}</div>
               </template>
               <template v-slot:row-delay_days="{ row }">
                 <div class="h4-5" :style="`${row.delay_days > 0 ? 'color:#C10015;':''}`">{{ row.delay_days}}</div>
@@ -72,7 +72,7 @@
                   <q-menu  class="font-demi-bold h4-5">
                       <q-list>
                         <q-item clickable @click="payInstallment(row)" >
-                          <q-item-section>پرداخت {{ row.type === '1' ? 'ماهیانه' : 'قسط وام' }}</q-item-section>
+                          <q-item-section>پرداخت {{ row.type === 1 ? 'ماهیانه' : 'قسط وام' }}</q-item-section>
                         </q-item>
                       </q-list>
                       </q-menu>
@@ -260,7 +260,7 @@
 
       <!-- payment  -->
       <q-dialog v-model="paymentDialog" >
-        <card-panel ref="paymentDialogRef" :title="` پرداخت  ${paymentInstance.type === '1' ? 'ماهیانه' : 'قسط'}`" size="60%"
+        <card-panel ref="paymentDialogRef" :title="` پرداخت  ${paymentInstance.type === 1 ? 'ماهیانه' : 'قسط'}`" size="60%"
         :hide_actions="true" >
         <template #card-sections>
         <q-card-section class="row items-center q-pb-none" >
@@ -538,7 +538,7 @@ export default {
     },
     async onAfterLoaded(rows){
       rows.forEach((row, index) => {
-        row.class = row.delay_days > 0 ? 'bg-lighten-pink':''
+        row.class = row.delay_days > 0 && row.paid_date == null ? 'bg-lighten-pink':''
       })
       this.fundAccountsList = await fundAccountList()
       this.accountsList = []

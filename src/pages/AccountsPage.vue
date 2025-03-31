@@ -499,6 +499,13 @@ export default {
       return formatCurrency(num)
     },
   reloadTable(){
+
+    if(this.filter.is_open) {
+      this.searchQuery = ''
+      this.filter.id = null
+      this.filter.member_name = null
+      this.filter.status = 4
+    }
     setTimeout(()=>{this.$refs.table.getRows()},1)
   },
     resetInstance(){

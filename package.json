@@ -2,7 +2,7 @@
   "name": "loan-fund-system-ui",
   "version": "0.0.1",
   "description": "A Loan Fund System",
-  "productName": "Loan_fund_system_UI",
+  "productName": "sandogh",
   "author": "fatemesoleymanian <soleymanian.usc@gmail.com>",
   "private": true,
   "scripts": {
@@ -29,7 +29,14 @@
     "postcss": "^8.4.14",
     "postcss-rtlcss": "^5.5.0",
     "prettier": "^2.5.1",
-    "vite-plugin-checker": "^0.8.0"
+    "vite-plugin-checker": "^0.8.0",
+    "workbox-build": "7.0.x",
+    "workbox-cacheable-response": "7.0.x",
+    "workbox-core": "7.0.x",
+    "workbox-expiration": "7.0.x",
+    "workbox-precaching": "7.0.x",
+    "workbox-routing": "7.0.x",
+    "workbox-strategies": "7.0.x"
   },
   "engines": {
     "node": "^20 || ^18 || ^16",

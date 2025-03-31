@@ -8,7 +8,11 @@
           </q-avatar>
           نرم افزار صندوق
         </q-toolbar-title>
-
+        <a
+         :href="`https://api-sandogh.liara.run/database/download?access_token=${token}`" style="color:white">
+       <q-btn label="بکاپ داده" outline >
+        </q-btn>
+        </a>
         <!-- <q-btn dense flat round icon="menu" @click="toggleRightDrawer" /> -->
       </q-toolbar>
     </q-header>
@@ -83,6 +87,7 @@ const linksList = [
 ]
 
 const rightDrawerOpen = ref(true)
+const token = localStorage.getItem('token')
 const $q = useQuasar()
 const okDialogAttrs = ref({
   message:'',
@@ -108,6 +113,7 @@ function showNotify (message, type = 'positive') {
 
   })
 }
+
 function onOkDialog (dialogData) {
       okDialogAttrs.value = dialogData
       okDialogOpen.value = true

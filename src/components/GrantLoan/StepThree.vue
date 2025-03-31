@@ -7,8 +7,9 @@
     @on-update-model="account.fund_account_id = $event.value"
     label="حساب" />
 </div>
-      <div class="col-12 row">
+      <div class="col-12 row" v-if="!done">
         <q-btn v-if="account.fund_account_id != null && installments.length < 1" label=" قسط بندی و ثبت وام" color="primary" @click="askForPartition"/>
+        <q-btn v-if="account.fund_account_id != null" label="ثبت بعنوان وام پرداخت شده" color="primary" @click="askForSaveWithoutPartition" class="q-mx-sm"/>
       </div>
       <q-separator inset />
                   <div class="col-12 row q-my-md" v-if="installments.length > 0">
@@ -34,8 +35,8 @@
                 <q-separator inset />
 <div class="col-12 items-center q-ml-auto q-mt-md">
   <q-btn
-   @click="goPreviousStep" label="قبلی" outline color="primary" v-if="installments.length < 1"/>
-  <q-btn @click="this.$emit('on-close')" label="بستن" color="primary" />
+   @click="goPreviousStep" label="قبلی" outline color="primary" v-if="installments.length < 1 && !done"/>
+  <q-btn @click="this.$emit('on-close')" label="بستن" color="primary" class="q-mx-sm"/>
 </div>
 </div>
 </q-page>
@@ -66,6 +67,7 @@ export default{
     const fundAccounts = props.funds
     const no_need_to_pay = props.instance.no_need_to_pay !== undefined && props.instance.no_need_to_pay
     return{
+      done:ref(false),
     no_need_to_pay,
     installments:ref([]),
     account,
@@ -76,6 +78,23 @@ export default{
   methods:{
     formatCurrencyy(num){
       return formatCurrency(num)
+    },
+    askForSaveWithoutPartition(){
+      this.onOkDialog({
+        message:` آیا از ثبت وام پرداخت شده بدون قسط بندی اطمینان دارید؟ `,
+        icon: 'info',
+        color: 'negative',
+        textColor: 'white',
+        onOk: async () => {
+          await api.post('loan_account/paid_loan',this.account).then(res=>{
+            this.installments = []
+            this.done = true
+        alert(res.data.msg)
+      }).catch(error=>{
+        alert(error.response.data.msg)
+      })
+        },
+      });
     },
     askForPartition(){
       this.onOkDialog({
@@ -92,6 +111,7 @@ export default{
       await api.post('loan_account',this.account).then(res=>{
         this.installments = res.data.installments
         if (this.installments.length < 1) this.$emit('on-close')
+        this.done = true
         alert(res.data.msg)
       }).catch(error=>{
         alert(error.response.data.msg)
