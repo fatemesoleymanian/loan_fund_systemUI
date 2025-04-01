@@ -66,7 +66,7 @@
             </CustomeTable>
             <div class="q-px-md q-py-sm font-demi-bold row">
               <div class="col-6">
-              مجموع مانده وام : {{ loanSummation[1] }}
+              مجموع مانده وام : {{ formatCurrencyy(loanSummation[1]) }}
             </div>
             <div class="col-6">
               مجموع مبلغ وام: {{ formatCurrencyy(loanSummation[0]) }}
