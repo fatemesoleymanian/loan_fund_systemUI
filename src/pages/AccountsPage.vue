@@ -540,7 +540,7 @@ export default {
         fax: instance.member.fax,
         stock_units: instance.stock_units,
         address: instance.member.address,
-        have_sms:instance.have_sms,
+        have_sms:instance.have_sms == 1,
         account_id: instance.id,
         balance: instance.balance,
         status: instance.status,
