@@ -91,6 +91,7 @@ components: {
 methods: {
 
   async loginSubmit () {
+    console.log(`http://localhost:8000/api`)
       this.loading = true
        await api.post('/login', {
         username: this.username,
@@ -107,11 +108,9 @@ methods: {
           this.showNotify('خطا در ورود به حساب کاربری', 'negative')
         }
       }).catch(obj => {
-        const data = obj.response.data.errorsList
+        const data = obj.response.data.token
         this.loading = false
-        for (const k of data) {
-          this.showNotify(k, 'negative')
-        }
+          this.showNotify(data, 'negative')
       })
   },
 

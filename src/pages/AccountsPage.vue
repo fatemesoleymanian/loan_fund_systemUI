@@ -29,7 +29,8 @@
         @after-loaded="onAfterLoaded"
         :table="{
           url:`${filter.is_open ?'account/all':'account' }${this.searchQuery}`,
-          arrayKey: 'accounts'
+          arrayKey: 'accounts',
+          summation: 'amounts'
           }"
               :add_button="
               {
@@ -43,6 +44,7 @@
               label: 'ارسال پیامک به اعضا',
              emit: 'on-send-sms-with-custom-message'
             }]"
+            @summation-after-loaded="accountBalanceSummation = $event"
             @on-send-sms-with-custom-message="smsObject={receptors:[],message:''};sendSmsWithCustomMessageDialog=true;">
               <template v-slot:row-created_at="{ row }">
                 <div class="h5">{{row.created_at }}</div>
@@ -97,6 +99,11 @@
                   </q-btn>
               </template>
             </CustomeTable>
+            <div class="q-px-md q-py-sm font-demi-bold row">
+              <div class="col-6">
+              مجموع موجودی حساب ها : {{ formatCurrencyy(accountBalanceSummation) }}
+            </div>
+          </div>
 
       <q-dialog v-model="accountInfoDialog" :persistent="true">
         <card-panel ref="accountInfoDialogRef" :title="accountInstance.id == null ? 'افتتاح حساب ':'ویرایش اطلاعات حساب'"
@@ -424,6 +431,7 @@ export default {
     const {year , month , day} = getJalaliDateSeperately()
     return {
       accountsList:ref([]),
+      accountBalanceSummation:ref(),
       smsObject:ref({receptors:[],message:''}),
       sendSmsWithCustomMessageDialog:ref(false),
       accountStatus,
