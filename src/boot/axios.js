@@ -4,8 +4,8 @@ import { boot } from 'quasar/wrappers'
 import axios from 'axios'
 import { Notify } from 'quasar'
 
-// const api = axios.create({ baseURL: 'https://api-sandogh.liara.run/api' })
-const api = axios.create({ baseURL: 'http://192.168.137.78:8000/api' })
+const api = axios.create({ baseURL: 'https://api-sandogh.liara.run/api' })
+// const api = axios.create({ baseURL: 'http://192.168.137.78:8000/api' })
 // const api = axios.create({ baseURL: process.env.VUE_APP_API_URL || `http://localhost:8000/api` })
 api.interceptors.response.use(
   response => {

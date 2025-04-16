@@ -199,7 +199,14 @@ module.exports = configure(function (/* ctx */) {
 
       builder: {
         // https://www.electron.build/configuration/configuration
-
+        win: {
+          target: [
+            {
+              target: 'nsis',
+              arch: ['ia32', 'x64']
+            }
+          ]
+        },
         appId: 'loan-fund-system-ui'
       }
     },

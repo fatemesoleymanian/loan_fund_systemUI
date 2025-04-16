@@ -91,7 +91,6 @@ components: {
 methods: {
 
   async loginSubmit () {
-    console.log(`http://localhost:8000/api`)
       this.loading = true
        await api.post('/login', {
         username: this.username,
