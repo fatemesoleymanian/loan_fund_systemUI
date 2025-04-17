@@ -8,8 +8,11 @@
     label="حساب" />
 </div>
       <div class="col-12 row" v-if="!done">
-        <q-btn v-if="account.fund_account_id != null && installments.length < 1" label=" قسط بندی و ثبت وام" color="primary" @click="askForPartition"/>
-        <q-btn v-if="account.fund_account_id != null" label="ثبت بعنوان وام پرداخت شده" color="primary" @click="askForSaveWithoutPartition" class="q-mx-sm"/>
+        <q-btn v-if="account.fund_account_id != null && installments.length < 1" label=" قسط بندی و ثبت وام"
+         color="primary" @click="askForPartition"
+        @loading="btnLock"/>
+        <q-btn v-if="account.fund_account_id != null" label="ثبت بعنوان وام پرداخت شده" color="primary"
+        @loading="btnLock" @click="askForSaveWithoutPartition" class="q-mx-sm"/>
       </div>
       <q-separator inset />
                   <div class="col-12 row q-my-md" v-if="installments.length > 0">
@@ -67,6 +70,7 @@ export default{
     const fundAccounts = props.funds
     const no_need_to_pay = props.instance.no_need_to_pay !== undefined && props.instance.no_need_to_pay
     return{
+      btnLock:ref(false),
       done:ref(false),
     no_need_to_pay,
     installments:ref([]),
@@ -86,11 +90,14 @@ export default{
         color: 'negative',
         textColor: 'white',
         onOk: async () => {
+          this.btnLock = true
           await api.post('loan_account/paid_loan',this.account).then(res=>{
             this.installments = []
             this.done = true
+            this.btnLock = false
         alert(res.data.msg)
       }).catch(error=>{
+        this.btnLock = false
         alert(error.response.data.msg)
       })
         },
@@ -108,12 +115,15 @@ export default{
       });
     },
     async saveLoanAndDoPartition(){
+      this.btnLock = true
       await api.post('loan_account',this.account).then(res=>{
         this.installments = res.data.installments
         if (this.installments.length < 1) this.$emit('on-close')
         this.done = true
+        this.btnLock = false
         alert(res.data.msg)
       }).catch(error=>{
+        this.btnLock = false
         alert(error.response.data.msg)
       })
     },
