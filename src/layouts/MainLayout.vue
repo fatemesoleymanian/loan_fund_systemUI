@@ -9,7 +9,7 @@
           نرم افزار صندوق
         </q-toolbar-title>
         <a
-         :href="`https://api-sandogh.liara.run/database/download?access_token=${token}`" style="color:white">
+         :href="`http://localhost:8000/database/download?access_token=${token}`" style="color:white">
        <q-btn label="بکاپ گیری" outline >
         </q-btn>
         </a>
