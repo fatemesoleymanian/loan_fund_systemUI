@@ -9,7 +9,7 @@
           نرم افزار صندوق
         </q-toolbar-title>
         <a
-         :href="`http://localhost:8000/database/download?access_token=${token}`" style="color:white">
+         :href="`https://api-sandogh.liara.run/database/download?access_token=${token}`" style="color:white">
        <q-btn label="بکاپ گیری" outline >
         </q-btn>
         </a>
@@ -49,7 +49,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
 import { useQuasar } from 'quasar';
 import OkCancelDialog from 'src/components/Dialogs/OkCancelDialog.vue';
@@ -121,4 +121,5 @@ provide('onOkDialog', (dialogData) => {
   okDialogAttrs.value = dialogData;
   okDialogOpen.value = true;
 })
+
 </script>

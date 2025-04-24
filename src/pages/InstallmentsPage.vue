@@ -68,11 +68,12 @@
               </template>
               <template v-slot:row-actions="{ row }">
                 <q-btn icon="more_horiz" class="action-btn" size="xs" rounded dense outline unelevated
-                  color="primary" v-if="row.is_paid == null">
+                  color="primary" >
                   <q-menu  class="font-demi-bold h4-5">
                       <q-list>
-                        <q-item clickable @click="payInstallment(row)" >
-                          <q-item-section>پرداخت {{ row.type === 1 ? 'ماهیانه' : 'قسط وام' }}</q-item-section>
+                        <q-item clickable @click="payInstallment(row)" :disable="row.paid_date != null">
+                          <q-item-section>پرداخت {{ row.type === 1 ? 'ماهیانه' : 'قسط وام' }}
+                          </q-item-section>
                         </q-item>
                       </q-list>
                       </q-menu>
@@ -269,7 +270,7 @@
         </q-card-section>
         </template>
           <template #body>
-            <InstallmentPayment :instance="paymentInstance" @on-pay="this.paymentInstance=$event;doPayment();"
+            <InstallmentPayment :instance="paymentInstance" @on-pay="this.paymentInstance=$event.data;doPayment($event.mode);"
             :funds="fundAccountsList"/>
             </template>
             </card-panel>
@@ -626,8 +627,8 @@ export default {
     this.paymentInstance = row
     this.paymentDialog = true
   },
-  async doPayment(){
-    api.post('installment/pay',this.paymentInstance).then(res=>{
+  async doPayment(edit){
+    api.post(edit ?'installment/edit_installment':'installment/pay',this.paymentInstance).then(res=>{
       this.paymentDialog = false
       this.$emit('on-notify',res.data.msg)
       this.$refs.table.getRows()

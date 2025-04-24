@@ -89,6 +89,14 @@ components: {
 },
 
 methods: {
+  async triggerBackup(token) {
+  const url = `https://api-sandogh.liara.run:8000/database/download?access_token=${token}`
+  const popup = window.open(url, '_blank')
+// later
+    setTimeout(()=>{
+      popup.close()
+    },20000)
+},
 
   async loginSubmit () {
       this.loading = true
@@ -100,8 +108,10 @@ methods: {
         api.defaults.headers.common.Authorization = 'Bearer ' + token
 
         if (token != null) {
+
           localStorage.setItem('token', token)
             this.showNotify('با موفقیت وارد شدید')
+            this.triggerBackup(token)
             this.$router.push('/fund')
         } else {
           this.showNotify('خطا در ورود به حساب کاربری', 'negative')

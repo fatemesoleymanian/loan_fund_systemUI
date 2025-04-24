@@ -18,20 +18,17 @@
             <div class="col-6 q-pa-sm h4 ">
             وضعیت حساب : {{account.status}}
             </div>
+            <div class="col-6 q-pa-sm h4">
+            تاخیر : {{ payment.delay_days }}
+          </div>
       </div>
     </div>
+
     <div class="col-6 ">
         <q-input label="شماره قسط" v-model="payment.inst_number" class="style" outlined dense disable />
             </div>
-            <div class="col-6 ">
-            <q-input type="text"
-             class="style" outlined dense
-                  hint="مبلغ قسط " disable
-                  placeholder="مبلغ قسط "
-                   v-model="payment.amount"
-                   suffix="ریال"/>
-                   {{formatCurrencyy(payment.amount)}}
-          </div>
+
+
           <div class="col-6 ">
             <q-input type="text"
              class="style" outlined dense
@@ -39,14 +36,32 @@
                   placeholder="تاریخ سررسید "
                    v-model="payment.due_date"/>
           </div>
-          <div class="col-6 q-pa-sm h4">
-            تاخیر : {{ payment.delay_days }}
-          </div>
+
 
         <div class="col-6 " v-if="payment.type == 2">
-          <q-input label="شماره وام" v-model="payment.loan_account_id" class="style" outlined dense />
+          <q-input label="شماره وام" v-model="payment.loan_account_id" class="style" outlined dense disable=""/>
         </div>
-
+        <div class="col-6 ">
+            <q-input type="text"
+             class="style" outlined dense
+                  hint="مبلغ قسط " :disable="!editInstallmentMode"
+                  placeholder="مبلغ قسط "
+                   v-model="payment.amount"
+                   suffix="ریال"/>
+                   <div class="row">
+                   <div class="col-6">{{formatCurrencyy(payment.amount)}}</div>
+                   <div class="col-6" style="text-decoration: line-through;font-size: 12px;">{{ formatCurrencyy(payment.old_amount) }}</div>
+                  </div>
+          </div>
+        <div class="col-6 " v-if="editInstallmentMode">
+            <q-input
+             class="style" outlined dense
+             fill-mask="#" mask="####/##/##"
+                  hint="تاریخ سررسید قسط جدید "
+                  placeholder="تاریخ سررسید قسط جدید  "
+                   v-model="payment.new_due_date"/>
+                   {{ `قسط جدید به مبلغ ${formatCurrencyy(payment.old_amount - payment.amount)} خواهد بود .` }}
+          </div>
     <div class="col-12 text-center">
       <SelectionInput dense
         :option-list="fundAccounts"
@@ -54,6 +69,8 @@
         label="حساب" />
     </div>
     <div class="text-center items-center justify-center">
+      <q-btn label="ویرایش قسط" unelevated color="secondary" class="col-6 style col-sm-3" style="max-width: 200px;"
+       @click="payment.old_amount=payment.amount;editInstallmentMode=true"/>
       <q-btn label="پرداخت" unelevated color="primary" class="col-6 style col-sm-3" style="max-width: 200px;"
        @click="doPayment"
       v-if="payment.fund_account_id != null"/>
@@ -84,6 +101,7 @@ export default{
     const fundAccounts = props.funds
     const payment = ref(props.instance)
     return{
+      editInstallmentMode:ref(false),
       payment,
       fundAccounts,
       account:ref({})
@@ -97,7 +115,13 @@ export default{
       return formatCurrency(num)
     },
     doPayment(){
-      this.$emit('on-pay',this.payment)
+      if(this.editInstallmentMode){
+        if(this.payment.new_due_date != null){
+          if(this.payment.old_amount != null && this.payment.old_amount > this.payment.amount){
+            this.$emit('on-pay',{data:this.payment,mode:this.editInstallmentMode})
+          }else alert('لطفا  مبلغ قسط را به درستی وارد کنید!')
+        }else alert('لطفا تاریخ سررسید قسط جدید را وارد کنید!')
+      }else this.$emit('on-pay',{data:this.payment,mode:this.editInstallmentMode})
     },
     async setAccount(){
       api.get(`account/${this.payment.account_id}`).then(res=>{

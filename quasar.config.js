@@ -23,7 +23,7 @@ module.exports = configure(function (/* ctx */) {
     boot: [
       'axios',
       'router-auth'
-    ],
+   ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: [
